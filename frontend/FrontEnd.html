@@ -1,0 +1,83 @@
+<head>
+	<title>Bootstrap Example</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/css/bootstrap-slider.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/bootstrap-slider.min.js"></script>
+	<script src="tabs.js"></script>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<a class="navbar-brand" href="#">LemonLight</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto nav-linktabs">
+				<li>
+					<a class="nav-link active" href="targeting">Targeting</a>
+				</li>
+				<li>
+					<a class="nav-link" href="networking">Networking</a>
+				</li>
+		</div>
+	</nav>
+
+	<section id="targeting" class="tab-content">
+		<div id="content">
+
+			<h4>
+			<div id="pipelineName">
+				PipelineOfLemons
+			</div>
+			</h4>
+
+			<hr style="margin-top: -0.25em">
+
+			<ul class="nav nav-tabs nav-linktabs justify-content-center" style="margin-top: 1.5em">
+				<li class="nav-item">
+					<a class="nav-link active" href="input">Input</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="thresholding">Thresholding</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="contourfiltering">Contour Filtering</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="output">Output</a>
+				</li>
+			</ul>
+			<hr style="margin-top: 0em">
+
+			<section id="input">
+			</section>
+
+			<section id="thresholding">
+				<div class="textbox">
+					<p class="alignleft">0</p>
+					<p id="hueText" class="aligncenter">Hue: 0-180</p>
+					<p class="alignright">180</p>
+					<div style="clear: both;"></div>
+				</div>
+				<input id="hueThreshold" type="text" class="" value="" data-slider-min="0" data-slider-max="180" data-slider-step="1" data-slider-value="[0,180]"/>
+				<script>
+				$("#hueThreshold").slider({});
+				</script>
+			</section>
+
+		</div>
+	</section>
+	<section id="networking" class="tab-content" style="display: none;">
+		<div id="content">
+			Content in tab 2
+		</div>
+	</section>
+</body>
