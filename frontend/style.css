@@ -1,0 +1,49 @@
+#content
+{
+    margin: 40px auto;
+    max-width: 800px;
+    line-height: 1.6;
+    font-size: 18px;
+    color: #444;
+    padding: 0 20px
+}
+
+.nav-tabs > li, .nav-pills > li
+{
+	float: none;
+	display: inline-block;
+	*display: inline;
+	zoom: 1;
+}
+
+.nav-tabs, .nav-pills
+{
+	text-align: center;
+}
+
+.slider-selection
+{
+	background: #428041;
+}
+
+.textbox
+{
+	width: 100%;
+	text-align: center;
+}
+
+.alignleft
+{
+	float:left;
+}
+
+.aligncenter
+{
+	display: inline-block;
+	margin: 0 auto;
+}
+
+.alignright
+{
+	float: right;
+}
