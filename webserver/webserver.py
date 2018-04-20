@@ -1,9 +1,11 @@
 from __future__ import print_function
 import sys
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
 import numpy as np
 import cv2
+
+import time
 
 #initialize flask server
 app = Flask(__name__)
@@ -12,8 +14,10 @@ app = Flask(__name__)
 img = cv2.cvtColor(cv2.imread("image.jpeg", cv2.IMREAD_COLOR), cv2.COLOR_BGR2HSV)
 
 #confiugration settings
-hsv_min = np.array([13, 157, 158])
-hsv_max = np.array([255, 255, 255])
+hsv_min = np.array([3, 59, 47])
+hsv_max = np.array([33, 151, 131])
+
+global cap
 
 '''
 Render main configuration page
@@ -23,11 +27,43 @@ def main_page():
 	return render_template("index.html")
 
 '''
+Get mjpg stream
+'''
+@app.route("/stream.mjpg")
+def render_stream():
+	setup_camera()
+	return Response(
+		generate_stream(),
+		mimetype="multipart/x-mixed-replace; boundary=jpgboundary"
+	)
+
+
+'''
+Generates individual jpg buffer to send to client
+'''
+def generate_stream():
+	header = "--jpgboundary\nContent-Type: image/jpeg\n\n"
+	while True:
+		yield header + next_mjpg_frame(filter(current_frame()), True)
+		time.sleep(0.03)
+
+
+'''
+Prepares and returns next stream frame
+src: HSV frame source
+is_binary: if thresholded image (these can't be color space converted)
+'''
+def next_mjpg_frame(src, is_binary):
+	if (not is_binary):
+		src = cv2.cvtColor(src, cv2.COLOR_HSV2BGR)
+	return cv2.imencode('.jpg', src)[1].tostring();
+
+
+'''
 Update configuration settings based on request from client
 '''
 @app.route("/fuck", methods = ["GET"])
 def process_data():
-	filter(img)
 	data = request.args;
 	f_print("Got data " + str(data))
 	format = {"parameter":str, "value":int}
@@ -81,7 +117,6 @@ TODO: Contour filtering based on configuration
 def filter(img):
 	thresholdImage = cv2.inRange(img, hsv_min, hsv_max)
 	contoursImg, contours, heirarchy = cv2.findContours(thresholdImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-	cv2.imwrite("static/new.png", thresholdImage)
 	return thresholdImage
 
 
@@ -89,9 +124,16 @@ def filter(img):
 Gets the current frame from the camera in HSV
 '''
 def current_frame():
-	cap = cv2.VideoCapture(0)
 	ret, frame = cap.read()
 	return cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+def setup_camera():
+	global cap
+	cap = cv2.VideoCapture(0)
+	cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320); 
+	cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240);
+	cap.set(cv2.CAP_PROP_SATURATION,0.2);
+	ret, frame = cap.read()
 
 '''
 Prints to flask debug output.
