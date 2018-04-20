@@ -59,7 +59,7 @@ def load_legacy(file):
 
 	#shave extra newlines off the end (number is inconsistent)
 	for line in reversed(parsed):
-		if (line == ""):subl
+		if (line == ""):
 			parsed = parsed[:-1]
 		else:
 			break
