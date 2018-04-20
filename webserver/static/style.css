@@ -1,7 +1,7 @@
 #content
 {
     margin: 40px auto;
-    max-width: 800px;
+    max-width: 1200px;
     line-height: 1.6;
     font-size: 18px;
     color: #444;
@@ -46,4 +46,16 @@
 .alignright
 {
 	float: right;
+}
+
+.sliderContainer
+{
+	padding-bottom: 1em;
+}
+
+.mainUI
+{
+	display: inline-block;
+	vertical-align: top;
+	width: 50%;
 }
