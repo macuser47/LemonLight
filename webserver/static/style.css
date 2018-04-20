@@ -1,11 +1,11 @@
 #content
 {
-    margin: 40px auto;
-    max-width: 1200px;
-    line-height: 1.6;
-    font-size: 18px;
-    color: #444;
-    padding: 0 20px
+	margin: 40px auto;
+	max-width: 1200px;
+	line-height: 1.6;
+	font-size: 18px;
+	color: #444;
+	padding: 0 20px;
 }
 
 .nav-tabs > li, .nav-pills > li
@@ -55,7 +55,13 @@
 
 .mainUI
 {
-	display: inline-block;
 	vertical-align: top;
+	width: 50%;
+	float: left;
+}
+
+.displayUI
+{
+	float: right;
 	width: 50%;
 }
