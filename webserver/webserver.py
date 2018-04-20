@@ -137,4 +137,4 @@ def f_print(str):
 start server
 '''
 if __name__ == "__main__":
-	app.run(host='127.0.0.1', port=125, debug=True)
+	app.run(host='127.0.0.1', port=125, threaded=True, debug=True)
