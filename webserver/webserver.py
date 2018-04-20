@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 
 import time
+import preferences as Prefs
 
 #initialize flask server
 app = Flask(__name__)
@@ -13,11 +14,10 @@ app = Flask(__name__)
 #stream simulator
 img = cv2.cvtColor(cv2.imread("image.jpeg", cv2.IMREAD_COLOR), cv2.COLOR_BGR2HSV)
 
-#confiugration settings
-hsv_min = np.array([3, 59, 47])
-hsv_max = np.array([33, 151, 131])
-
 global cap
+
+#preferences value
+current_prefs = Prefs.load("prefs.vpr")
 
 '''
 Render main configuration page
@@ -32,7 +32,7 @@ Get mjpg stream
 @app.route("/stream.mjpg")
 def render_stream():
 	setup_camera()
-	return Response(
+	return Response( #TODO: make this stop gracefully when session ends instead of the thread violently crashing
 		generate_stream(),
 		mimetype="multipart/x-mixed-replace; boundary=jpgboundary"
 	)
@@ -66,55 +66,47 @@ Update configuration settings based on request from client
 def process_data():
 	data = request.args;
 	f_print("Got data " + str(data))
-	format = {"parameter":str, "value":int}
 
 	#sets data values if data properly formatted
 	#open to any better way to do this -- dicts maybe?
-	if (dict_valid(data, format)):	
+	if (options_data_valid(data)):	 
 		f_print("Request formatted properly!")
-		p = data["parameter"]
-		d = data["value"]
-		if (p == "H_MIN"):
-			hsv_min[0] = int(d)
-		if (p == "H_MAX"):
-			hsv_max[0] = int(d)
-		if (p == "S_MIN"):
-			hsv_min[1] = int(d)
-		if (p == "S_MAX"):
-			hsv_max[1] = int(d)
-		if (p == "V_MIN"):
-			hsv_min[2] = int(d)
-		if (p == "V_MAX"):
-			hsv_max[2] = int(d)
+		for key, value in data.iteritems():
+			current_prefs[key] = Prefs.format[key](value)
 	else:
 		f_print("Malformed request, ignoring...")
 
 	return "You shouldn't be here....<br>Get the <b><i>fuck</i></b> out."
 
 '''
-Checks validity of dictionary based on format dictionary
+Checks if incoming GET preference changes are valid
+Inverse of Prefs.check_integrity: checks if all elements of data are in format,
+rather than all elements of format are in data
 '''
-def dict_valid(data, format):
+def options_data_valid(data): 
 	correct_format = True
-	#https://stackoverflow.com/a/3294899
-	for key, value in format.iteritems():
-		correct_format &= (key in data)
+	for key, value in data.iteritems():
+		correct_format &= (key in Prefs.format)
 
 		if (not correct_format):
 			break
 
 		try:
-			n = value(data[key])
+			n = Prefs.format[key](value)
 		except ValueError:
 			correct_format = False
 
 	return correct_format
+
 
 '''
 Performs opencv filter on an image
 TODO: Contour filtering based on configuration
 '''
 def filter(img):
+	#TODO: make this look less dumb. map() w/lambda?
+	hsv_min = np.array([current_prefs["hue_min"], current_prefs["sat_min"], current_prefs["val_min"]])
+	hsv_max = np.array([current_prefs["hue_max"], current_prefs["sat_max"], current_prefs["val_max"]])
 	thresholdImage = cv2.inRange(img, hsv_min, hsv_max)
 	contoursImg, contours, heirarchy = cv2.findContours(thresholdImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 	return thresholdImage
