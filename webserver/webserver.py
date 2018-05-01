@@ -1,23 +1,64 @@
 from __future__ import print_function
 import sys
-
-from flask import Flask, render_template, request, Response
-import numpy as np
-import cv2
-
 import time
+import cv2
+from flask import Flask, render_template, request, Response
 import preferences as Prefs
+import ctypes
+from multiprocessing import Pipe
+from threading import Thread
 
-#initialize flask server
-app = Flask(__name__)
 
-#stream simulator
-img = cv2.cvtColor(cv2.imread("image.jpeg", cv2.IMREAD_COLOR), cv2.COLOR_BGR2HSV)
-
-global cap
+MJPEG_TIMEOUT = 0.03
 
 #preferences value
-current_prefs = Prefs.load("prefs.vpr")
+current_prefs = Prefs.load("prefs.vpr") 
+
+#last requested timestamp for mjpg
+stream_timestamp = time.time()
+
+global jpeg_pipe
+global jpeg_data
+#jpeg_data = ""#cv2.imencode('.jpg', cv2.imread("image.jpeg"))[1].tostring()
+
+app = Flask(__name__)
+
+
+'''
+start server
+'''
+def run(c):
+	global jpeg_pipe
+	jpeg_pipe = c
+	buffer_thread = Thread(target=jpeg_buffer_daemon)
+	response_thread = Thread(target=response_daemon)
+	buffer_thread.daemon = True
+	response_thread.daemon = True
+	buffer_thread.start()
+	response_thread.start()
+	app.run(host='127.0.0.1', port=125, threaded=True, debug=True, use_reloader=False)
+
+
+def jpeg_buffer_daemon():
+	global jpeg_data
+	while True:
+		try:
+			jpeg_data = jpeg_pipe.recv() # Read from the output pipe
+		except EOFError:
+			print("EOF ERROR IN JPEG BUFFER DAEMON")
+			continue
+
+def response_daemon():
+	while True:
+		#construct response object
+		response = {}
+		response["stream_timestamp"] = stream_timestamp
+		response["prefs"] = current_prefs
+		try:
+			jpeg_pipe.send(response)
+		except EOFError:
+			print("EOF ERROR IN RESPONSE DAEMON")
+			continue
 
 '''
 Render main configuration page
@@ -29,10 +70,10 @@ def main_page():
 '''
 Get mjpg stream
 '''
-@app.route("/stream.mjpg")
+@app.route("/stream.mjpg", methods=["GET"])
 def render_stream():
-	setup_camera()
-	return Response( #TODO: make this stop gracefully when session ends instead of the thread violently crashing
+	f_print("Request Received")
+	return Response(
 		generate_stream(),
 		mimetype="multipart/x-mixed-replace; boundary=jpgboundary"
 	)
@@ -42,21 +83,13 @@ def render_stream():
 Generates individual jpg buffer to send to client
 '''
 def generate_stream():
+	global jpeg_data
+	global stream_timestamp
 	header = "--jpgboundary\nContent-Type: image/jpeg\n\n"
 	while True:
-		yield header + next_mjpg_frame(filter(current_frame()), True)
-		time.sleep(0.03)
-
-
-'''
-Prepares and returns next stream frame
-src: HSV frame source
-is_binary: if thresholded image (these can't be color space converted)
-'''
-def next_mjpg_frame(src, is_binary):
-	if (not is_binary):
-		src = cv2.cvtColor(src, cv2.COLOR_HSV2BGR)
-	return cv2.imencode('.jpg', src)[1].tostring();
+		stream_timestamp = time.time()
+		yield header + jpeg_data
+		time.sleep(MJPEG_TIMEOUT)
 
 
 '''
@@ -64,11 +97,10 @@ Update configuration settings based on request from client
 '''
 @app.route("/fuck", methods = ["GET"])
 def process_data():
-	data = request.args;
+	data = request.args
 	f_print("Got data " + str(data))
 
 	#sets data values if data properly formatted
-	#open to any better way to do this -- dicts maybe?
 	if (options_data_valid(data)):	 
 		f_print("Request formatted properly!")
 		for key, value in data.iteritems():
@@ -100,40 +132,7 @@ def options_data_valid(data):
 
 
 '''
-Performs opencv filter on an image
-TODO: Contour filtering based on configuration
-'''
-def filter(img):
-	#TODO: make this look less dumb. map() w/lambda?
-	hsv_min = np.array([current_prefs["hue_min"], current_prefs["sat_min"], current_prefs["val_min"]])
-	hsv_max = np.array([current_prefs["hue_max"], current_prefs["sat_max"], current_prefs["val_max"]])
-	thresholdImage = cv2.inRange(img, hsv_min, hsv_max)
-	contoursImg, contours, heirarchy = cv2.findContours(thresholdImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-	return thresholdImage
-
-
-'''
-Gets the current frame from the camera in HSV
-'''
-def current_frame():
-	ret, frame = cap.read()
-	return cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-def setup_camera():
-	global cap
-	cap = cv2.VideoCapture(0)
-	cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320); 
-	cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240);
-	ret, frame = cap.read()
-
-'''
 Prints to flask debug output.
 '''
 def f_print(str):
 	print(str, file=sys.stderr)
-
-'''
-start server
-'''
-if __name__ == "__main__":
-	app.run(host='127.0.0.1', port=125, threaded=True, debug=True)
