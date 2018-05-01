@@ -22,8 +22,8 @@ Initializes camera source
 def setup_camera():
 	global camera_capture
 	camera_capture = cv2.VideoCapture(0)
-	camera_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320); 
-	camera_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240);
+	camera_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320) 
+	camera_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 	ret, frame = camera_capture.read()
 
 '''
