@@ -25,50 +25,45 @@ def init():
 	proc.start()
 	Vision.init()
 	Vision.start()
+	start_threads()
 
 def update():
+	pass
+
+
+def receive_webserver_data():
+	global parent_c
 	global stream_timestamp
-	#do vision processing
-	raw_img = Vision.current_frame
-	filtered_img = Vision.filter(raw_img)
+	while True:
+		try:
+			a = parent_c.recv()
+			Vision.current_prefs = a["prefs"]
+			stream_timestamp = a["stream_timestamp"]
+			pass
+		except EOFError:
+			print("Error receiving preferences data from webserver process")
 
-	#output to NT (todo)
-	#cv2.imshow("", raw_img)
-	#cv2.waitKey(0)
-
-	#check server
-	if (time.time() - stream_timestamp < stream_timeout):
-		jpeg = Vision.encode_jpg(filtered_img, True)
-		parent_c.send(jpeg)
-		print("STREAMING")
-	else:
-		print("NOT STREAMING")
-
-	#create custom string with length param to allow for 0x00 in cstring
-
-
-
-	try:
-		a = parent_c.recv()
-		#print("Stamp: " + str(a["stream_timestamp"]))
-		Vision.current_prefs = a["prefs"]
-		stream_timestamp = a["stream_timestamp"]
-		pass
-	except EOFError:
-		print("Error receiving preferences data from webserver process")
-
-	#print("passed")
-	#print(v.value.decode("hex"))
-	#print(ctypes.string_at(ctypes.create_string_buffer(jpeg), length).encode("hex"))
-
-	#raise KeyboardInterrupt
-
-	#print(Vision.encode_jpg(raw_img, False).encode("hex"))
-
-	#print Server.jpeg_data
+def pass_stream_data():
+	while True:
+		if (time.time() - stream_timestamp < stream_timeout):
+			raw_img = Vision.current_frame
+			filtered_img = Vision.filter(raw_img)
+			jpeg = Vision.encode_jpg(filtered_img, True)
+			parent_c.send(jpeg)
+			#print("STREAMING")
+		else:
+			pass
+			#print("NOT STREAMING")
 
 
+def start_threads():
+	global thread_map
+	for fun in thread_map:
+		thread = Thread(target=fun)
+		thread.daemon = True
+		thread.start()
 
+thread_map = [receive_webserver_data, pass_stream_data]
 
 if __name__ == "__main__":
 	init()
