@@ -9,7 +9,7 @@ from multiprocessing import Pipe
 from threading import Thread
 
 
-MJPEG_TIMEOUT = 0.03
+STREAM_FRAMERATE = 30
 
 #preferences value
 current_prefs = Prefs.load("prefs.vpr") 
@@ -19,7 +19,7 @@ stream_timestamp = time.time()
 
 global jpeg_pipe
 global jpeg_data
-#jpeg_data = ""#cv2.imencode('.jpg', cv2.imread("image.jpeg"))[1].tostring()
+jpeg_data = cv2.imencode('.jpg', cv2.imread("image.jpeg"))[1].tostring()
 
 app = Flask(__name__)
 
@@ -89,7 +89,7 @@ def generate_stream():
 	while True:
 		stream_timestamp = time.time()
 		yield header + jpeg_data
-		time.sleep(MJPEG_TIMEOUT)
+		time.sleep(1 / float(STREAM_FRAMERATE))
 
 
 '''
