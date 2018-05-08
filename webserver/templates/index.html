@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+
 <head>
 	<title>Bootstrap Example</title>
 	<meta charset="utf-8">
@@ -13,116 +15,187 @@
 </head>
 
 <body>
-	
-	<nav class="navbar navbar-expand-lg navbar-light bg-light">
-		<a class="navbar-brand" href="#">LemonLight</a>
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
-		
-		<div class="collapse navbar-collapse" id="navbarSupportedContent">
-			<ul class="navbar-nav mr-auto nav-linktabs">
-				<li>
-					<a class="nav-link active" href="targeting">Targeting</a>
-				</li>
-				<li>
-					<a class="nav-link" href="networking">Networking</a>
-				</li>
-			</ul>
-		</div>
-	</nav>
 
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<a class="navbar-brand" href="#">LemonLight</a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav mr-auto nav-linktabs">
+			<li>
+				<a class="nav-link active" href="targeting">Targeting</a>
+			</li>
+			<li>
+				<a class="nav-link" href="networking">Networking</a>
+			</li>
+		</ul>
+	</div>
+</nav>
+
+
+<div id="content">
+
+<section id="targeting" class="tab-content container-fluid">
+
+<div id="display" class="displayUI">
+	<h4>
+	<div id="streamTitle">
+		<script>
+		document.write("Stream: " + window.location.href + "/stream.mpg");
+		</script>
+	</div>
+	</h4>
+	<hr style="margin-top: -0.25em"/>
+
+	<img src="/stream.mjpg" width="100%"/>
+</div>
+
+<div id="options" class="mainUI">
+
+	<h4>
+	<div id="pipeline-config">
+		Pipeline Configuration
+	</div>
+	</h4>
+
+	<hr style="margin-top: -0.25em"/>
+
+	<!-- begin the pipeline chooser -->
+	<div style="display: flex; align-items: center;">
+
+	<span class="inline"> Pipeline: </span>
+
+	<span class="form-group inline" style="width:10em; margin: 15px">
+		<select class="form-control" id="pipeline-select">
+			<option>0</option>
+			<option>1</option>
+			<option>2</option>
+			<option>3</option>
+			<option>4</option>
+			<option>5</option>
+			<option>6</option>
+			<option>7</option>
+			<option>8</option>
+			<option>9</option>
+		</select>
+	</span>
+
+	<span class="inline" style="margin: 5px">
+		<input type="checkbox" id="ignore-nt" value=""/>
+	</span>
+	<span class="inline" style="margin: 5px; font-size: 12px">
+		Ignore NetworkTables pipeline index. Check this to start editing multiple pipelines!
+	</span>
+
+	</div>
+	<!-- end the pipeline chooser -->
+
+	<hr/>
+
+	<!-- start the current pipeline name and buttons -->
+	<div  class="container-fluid" style="display: flex; align-items: center;">
+
+	<div style="float: left; width: 50%; margin-right: 10px">
+	<span id="pipeline-name" class="inline" style="margin: 5px;">Pipeline_Name</span>
+	<input type="name" class="form-control" id="pipeline-form" style="font-size: 14px"/>
+	</div>
+
+	<div>
+	<span>
+		<button type="submit" class="btn btn-primary btn-small">Make Default</button>
+		<button type="submit" class="btn btn-primary btn-small">Download</button>
+		<button type="submit" class="btn btn-primary btn-small">Upload</button>
+	</span>
+	</div>
+
+	</div>
+	<!-- end the current pipeline name and buttons -->
+
+	<hr/>
+
+	<ul class="nav nav-tabs nav-linktabs justify-content-center" style="margin-top: 1.5em;">
+		<li class="nav-item">
+			<a class="nav-link active" href="input">Input</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="thresholding">Thresholding</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="contourfiltering">Contour Filtering</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="output">Output</a>
+		</li>
+	</ul>
+	<hr style="margin-top: 0em">
+
+	<section id="input">
+
+	</section>
+
+	<section id="thresholding">
+	<div id="hue" class="sliderContainer">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="hueText" class="aligncenter">Hue: 0-180</p>
+			<p class="alignright">180</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="hueThreshold" type="text" class="" value="" data-slider-min="0" data-slider-max="180" data-slider-step="1" data-slider-value="[0,180]"/>
+		<script>
+		$("#hueThreshold").slider({});
+		</script>
+	</div>
+
+	<div id="sat" class="sliderContainer">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="satText" class="aligncenter">Saturation: 0-255</p>
+			<p class="alignright">255</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="satThreshold" type="text" class="" value="" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-value="[0,255]"/>
+		<script>
+		$("#satThreshold").slider({});
+		</script>
+	</div>
+
+	<div id="val" class="sliderContainer">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="valText" class="aligncenter">Value: 0-255</p>
+			<p class="alignright">255</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="valThreshold" type="text" class="" value="" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-value="[0,255]"/>
+		<script>
+		$("#valThreshold").slider({});
+		</script>
+	</div>
+
+	<br>
+	<br>
+	<div id="result">
+		No requests sent yet.
+	</div>
+
+	</section>
+
+<!-- end mainUI -->
+</div>
+
+<!-- end targeting -->
+</section>
+
+<section id="networking" class="tab-content" style="display: none;">
 	<div id="content">
-	
-	<div id="options" class="mainUI">
-	
-	<section id="targeting" class="tab-content">
-
-			<h4>
-			<div id="pipelineName">
-				PipelineOfLemons
-			</div>
-			</h4>
-
-			<hr style="margin-top: -0.25em">
-
-			<ul class="nav nav-tabs nav-linktabs justify-content-center" style="margin-top: 1.5em">
-				<li class="nav-item">
-					<a class="nav-link active" href="input">Input</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="thresholding">Thresholding</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="contourfiltering">Contour Filtering</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="output">Output</a>
-				</li>
-			</ul>
-			<hr style="margin-top: 0em">
-
-			<section id="input">
-			</section>
-
-			<section id="thresholding">
-			<div id="hue" class="sliderContainer">
-				<div class="textbox">
-					<p class="alignleft">0</p>
-					<p id="hueText" class="aligncenter">Hue: 0-180</p>
-					<p class="alignright">180</p>
-					<div style="clear: both;"></div>
-				</div>
-				<input id="hueThreshold" type="text" class="" value="" data-slider-min="0" data-slider-max="180" data-slider-step="1" data-slider-value="[0,180]"/>
-				<script>
-				$("#hueThreshold").slider({});
-				</script>
-			</div>
-
-			<div id="sat" class="sliderContainer">
-				<div class="textbox">
-					<p class="alignleft">0</p>
-					<p id="satText" class="aligncenter">Saturation: 0-255</p>
-					<p class="alignright">255</p>
-					<div style="clear: both;"></div>
-				</div>
-				<input id="satThreshold" type="text" class="" value="" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-value="[0,255]"/>
-				<script>
-				$("#satThreshold").slider({});
-				</script>
-			</div>
-
-			<div id="val" class="sliderContainer">
-				<div class="textbox">
-					<p class="alignleft">0</p>
-					<p id="valText" class="aligncenter">Value: 0-255</p>
-					<p class="alignright">255</p>
-					<div style="clear: both;"></div>
-				</div>
-				<input id="valThreshold" type="text" class="" value="" data-slider-min="0" data-slider-max="255" data-slider-step="1" data-slider-value="[0,255]"/>
-				<script>
-				$("#valThreshold").slider({});
-				</script>
-			</div>
-
-			<br>
-			<br>
-			<div id="result">
-				No requests sent yet.
-			</div>
-			</section>
-	</section>
-
-	<section id="networking" class="tab-content" style="display: none;">
-		<div id="content">
-			Content in tab 2
-		</div>
-	</section>
+		Content in tab 2
 	</div>
+</section>
 
-	<div id="display" class="displayUI">
-		<img src="/stream.mjpg"/>
-	</div>
+<!-- end content -->
+</div>
 
-	</div>
 </body>
