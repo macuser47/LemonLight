@@ -38,6 +38,7 @@ prefs_format = {
 application_prefs_format = {
 	"target_ip":unicode,
 	"default_pipeline":int,
+	"current_pipeline":int,
 	"view_mode":int
 }
 
@@ -113,8 +114,6 @@ Generalized method to save file based on schema
 def save_format(prefs, file, schema):
 	if (not check_integrity(prefs, schema)):
 		raise InvalidPreferencesException("Preferences improperly formatted")
-
-	print("??")
 
 	f = open(file, "w+")
 	f.write( json.dumps(prefs, sort_keys=True, indent=4, separators=(',', ': ')) )
