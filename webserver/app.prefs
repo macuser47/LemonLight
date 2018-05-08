@@ -1,4 +1,5 @@
 {
+    "current_pipeline": 0,
     "default_pipeline": 0,
     "target_ip": "127.0.0.1",
     "view_mode": 0

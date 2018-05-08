@@ -7,12 +7,13 @@ import preferences as Prefs
 import ctypes
 from multiprocessing import Pipe
 from threading import Thread
+import json
 
 STREAM_FRAMERATE = 30
 
-#preferences value
-current_prefs = Prefs.load("prefs.vpr")
+#preferences values
 app_prefs = Prefs.load_app_prefs("app.prefs")
+current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["current_pipeline"])  + ".vpr")
 
 #last requested timestamp for mjpg
 stream_timestamp = time.time()
@@ -99,14 +100,27 @@ TODO: Move to POST requests with body instead of GET
 '''
 @app.route("/app_prefs", methods = ["GET"])
 def process_app_data():
+	global current_prefs
 	data = request.args
 	if (options_data_valid(data, Prefs.application_prefs_format)):
 		f_print("App prefs: Request formatted properly!")
 		for key, value in data.iteritems():
 			app_prefs[key] = Prefs.application_prefs_format[key](value)
-		#TODO: Write to file
+
+		#Update local file every time a change is made
+		Prefs.save_app_prefs(app_prefs, "app.prefs")
+
+		#Do server-specific event handling for prefs data
+		if ("current_pipeline" in data):
+			#load new pipeline
+			current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["current_pipeline"])  + ".vpr")
+			#return new prefs data for client updates
+			return json.dumps( current_prefs )
+
 	else:
 		f_print("App prefs: Malformed request, ignoring...")
+
+	return "Welcome to <strong>the internet</strong><br>Just kidding, you're on LAN.<br><strong>B A M B O O Z L E D</strong>"
 
 
 '''
@@ -122,7 +136,8 @@ def process_data():
 		f_print("Request formatted properly!")
 		for key, value in data.iteritems():
 			current_prefs[key] = Prefs.prefs_format[key](value)
-		#TODO: Write to file
+		#Update local file every time a change is made
+		Prefs.save(current_prefs, "vprs/prefs" + str(app_prefs["current_pipeline"]) + ".vpr")
 	else:
 		f_print("Malformed request, ignoring...")
 
