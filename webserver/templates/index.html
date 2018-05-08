@@ -131,12 +131,77 @@
 	</ul>
 	<hr style="margin-top: 0em">
 
+	<!-- Input section -->
 	<section id="input">
+	<!-- Image source dropdown -->
+	<div id="image-source" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Image Source</p>
+		</div>
+		<select class="form-control" id="source-select">
+			<option>Limelight</option>
+			<option>Snapshot</option>
+		</select>
+	</div>
 
+	<!-- Image orientation dropdown -->
+	<div id="image-orientation" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Camera Orientation</p>
+		</div>
+		<select class="form-control" id="orientation-select">
+			<option>Standard</option>
+			<option>Inverted</option>
+		</select>
+	</div>
+
+	<!-- Exposure slider -->
+	<div id="exposure" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">2</p>
+			<p id="expText" class="aligncenter">Exposure: 2</p>
+			<p class="alignright">100</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="expSlider" type="text" class="" value="" data-slider-min="2" data-slider-max="100" data-slider-step="1" data-slider-value="2"/>
+		<script>
+		$("#expSlider").slider({});
+		</script>
+	</div>
+
+	<!-- Red Balance slider -->
+	<div id="rbalance" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">500</p>
+			<p id="rbalText" class="aligncenter">Red Balance: 1200</p>
+			<p class="alignright">2500</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="rbalSlider" type="text" class="" value="" data-slider-min="500" data-slider-max="2500" data-slider-step="1" data-slider-value="1200"/>
+		<script>
+		$("#rbalSlider").slider({});
+		</script>
+	</div>
+
+	<!-- Blue Balance slider -->
+	<div id="bbalance" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">500</p>
+			<p id="bbalText" class="aligncenter">Blue Balance: 1975</p>
+			<p class="alignright">2500</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="bbalSlider" type="text" class="" value="" data-slider-min="500" data-slider-max="2500" data-slider-step="1" data-slider-value="1975"/>
+		<script>
+		$("#bbalSlider").slider({});
+		</script>
+	</div>
 	</section>
 
-	<section id="thresholding">
-	<div id="hue" class="sliderContainer">
+	<!-- Thresholding section -->
+	<section id="thresholding" style="display: none;">
+	<!-- Hue slider -->
+	<div id="hue" class="vcomponent">
 		<div class="textbox">
 			<p class="alignleft">0</p>
 			<p id="hueText" class="aligncenter">Hue: 0-180</p>
@@ -149,7 +214,8 @@
 		</script>
 	</div>
 
-	<div id="sat" class="sliderContainer">
+	<!-- Saturation slider -->
+	<div id="sat" class="vcomponent">
 		<div class="textbox">
 			<p class="alignleft">0</p>
 			<p id="satText" class="aligncenter">Saturation: 0-255</p>
@@ -162,7 +228,8 @@
 		</script>
 	</div>
 
-	<div id="val" class="sliderContainer">
+	<!-- Value slider -->
+	<div id="val" class="vcomponent">
 		<div class="textbox">
 			<p class="alignleft">0</p>
 			<p id="valText" class="aligncenter">Value: 0-255</p>

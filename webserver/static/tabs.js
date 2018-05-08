@@ -10,7 +10,6 @@ $(document).ready(function()
 	}).mouseleave(function(event) {
 		$(this).css("background-color", "transparent");
 	});
-
 	// handle changing the pipeline name
 	// on click, turn name into a text field
 	$("#pipeline-name").click(function(event) {
@@ -23,7 +22,6 @@ $(document).ready(function()
 	// on click outside, then set the text field to the name
 	$(document).click(function(event)
 	{
-		console.log("running");
 		// if pipeline form is visible, meaning that the user entered a pipeline name
 		if ($("#pipeline-form").is(":visible"))
 		{
@@ -48,11 +46,10 @@ $(document).ready(function()
 		if(key == 13)
 		{
 			// simulate a click outside
-			console.log("running0");
 			$(document).click();
 		}
 	});
-
+	
 	// make the user unable to edit the pipeline if the ignore checkbox is checked
 	$("#ignore-nt").change(function(){
 		if (this.checked)
@@ -70,34 +67,14 @@ $(document).ready(function()
 	// make sliders fill divs
 	$(".slider.slider-horizontal").css("margin-left", "1.2%");
 	$(".slider.slider-horizontal").css("width", "97%");
-	
-	// slider callbacks
-	var sliderFail = function( jqXHR, textStatus, errorThrown ) {
-		$("#result").html(textStatus);
-	}
-	var sliderDone = function( jqXHR, textStatus, errorThrown ) {
-		$("#result").html(textStatus);
-	}
 
-	// handle slider drag
-	$("#hueThreshold").on("slide", function(slideEvt) {
-		$("#hueText").text("Hue: " + slideEvt.value[0] + "-" + slideEvt.value[1]);
-		// get request to Flask server
-		var params = { hue_min: slideEvt.value[0], hue_max: slideEvt.value[1] };
-		$.get("/fuck?" + $.param(params)).done(sliderDone).fail(sliderFail);
-	});
-	$("#satThreshold").on("slide", function(slideEvt) {
-		$("#satText").text("Saturation: " + slideEvt.value[0] + "-" + slideEvt.value[1]);
-		// get request to Flask server
-		var params = { sat_min: slideEvt.value[0], sat_max: slideEvt.value[1] };
-		$.get("/fuck?" + $.param(params)).done(sliderDone).fail(sliderFail);s
-	});
-	$("#valThreshold").on("slide", function(slideEvt) {
-		$("#valText").text("Value: " + slideEvt.value[0] + "-" + slideEvt.value[1]);
-		// get request to Flask server
-		var params = { val_min: slideEvt.value[0], val_max: slideEvt.value[1] };
-		$.get("/fuck?" + $.param(params)).done(sliderDone).fail(sliderFail);
-	});
+	// handle thresholding slider drag
+	bindSlider("expSlider", "expText", "Exposure", ["exposure"]);
+	bindSlider("rbalSlider", "rbalText", "Red Balance", ["red_balance"]);
+	bindSlider("bbalSlider", "bbalText", "Blue Balance", ["blue_balance"]);
+	bindSlider("hueThreshold", "hueText", "Hue", ["hue_min", "hue_max"]);
+	bindSlider("satThreshold", "satText", "Saturation", ["sat_min", "sat_max"]);
+	bindSlider("valThreshold", "valText", "Value", ["val_min", "val_max"]);
 
 	// handle tab clicks
 	$('.nav-linktabs > li > a').click(function(event) {
@@ -129,3 +106,40 @@ $(document).ready(function()
 		section.show();
 	});
 });
+
+// slider callbacks
+var sliderFail = function( jqXHR, textStatus, errorThrown ) {
+	$("#result").html(textStatus);
+}
+var sliderDone = function( jqXHR, textStatus, errorThrown ) {
+	$("#result").html(textStatus);
+}
+
+function bindSlider(sliderID, textID, name, params)
+{
+	$("#" + sliderID).on("slide", function(slideEvt) {
+		// get request to Flask server
+		var obj = {};
+		var str = "";
+		// convert single value to array if necessary
+		var value = slideEvt.value;
+		if (value.constructor !== Array)
+		{
+			value = [value];
+		}
+		// create string and params
+		for (var i = 0; i < params.length; i++)
+		{
+			obj[params[i]] = value[i];
+			if (i > 0)
+			{
+				str += "-";
+			}
+			str += value[i];
+		}
+		// send request to flask server
+		$.get("/fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
+		// set text
+		$("#" + textID).text(name + ": " + str);
+	});
+}
