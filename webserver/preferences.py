@@ -3,7 +3,7 @@ import re
 
 #defines required elements for a properly formatted
 #Preferences file
-format = {
+prefs_format = {
 	"area_max":int,
 	"area_min":float,
 	"aspect_max":int,
@@ -35,15 +35,33 @@ format = {
 	"val_min":int
 }
 
+application_prefs_format = {
+	"target_ip":unicode,
+	"default_pipeline":int,
+	"view_mode":int
+}
+
+'''
+Loads Application Prefernces from pref file and packs into dictionary
+'''
+def load_app_prefs(file):
+	return load_format(file, application_prefs_format)
+
 '''
 Loads Preferences from vpr file and packs into dictionary
 '''
 def load(file):
+	return load_format(file, prefs_format)
+
+'''
+Generalized method to load json file based on preferences schema
+'''
+def load_format(file, schema):
 	f = open(file, "r")
 	prefs = json.load(f)
 	f.close()
 
-	if (not check_integrity(prefs, format)):
+	if (not check_integrity(prefs, schema)):
 		raise InvalidPreferencesException("Preferences improperly formatted")
 
 	return prefs
@@ -68,21 +86,35 @@ def load_legacy(file):
 	try:
 		for index, elem in enumerate(parsed):
 			if (index % 2 == 0):
-				prefs[elem] = format[elem]( parsed[index+1] )
+				prefs[elem] = prefs_format[elem]( parsed[index+1] )
 	except:
 		raise InvalidPreferencesException("Legacy Preferences improperly formatted")
 
-	if (not check_integrity(prefs, format)):
+	if (not check_integrity(prefs, prefs_format)):
 		raise InvalidPreferencesException("Legacy Preferences improperly formatted")
 
 	return prefs
 
 '''
+Save Appliction preferences to prefs
+'''
+def save_app_prefs(prefs, file):
+	save_format(prefs, file, application_prefs_format)
+
+'''
 Saves Preferences to json-encoded vpr
 '''
 def save(prefs, file):
-	if (not check_integrity(prefs, format)):
+	save_format(prefs, file, prefs_format)
+
+'''
+Generalized method to save file based on schema
+'''
+def save_format(prefs, file, schema):
+	if (not check_integrity(prefs, schema)):
 		raise InvalidPreferencesException("Preferences improperly formatted")
+
+	print("??")
 
 	f = open(file, "w+")
 	f.write( json.dumps(prefs, sort_keys=True, indent=4, separators=(',', ': ')) )
@@ -92,7 +124,7 @@ def save(prefs, file):
 Save Preferences to non-json legacy vpr
 '''
 def save_legacy(prefs, file):
-	if (not check_integrity(prefs, format)):
+	if (not check_integrity(prefs, prefs_format)):
 		raise InvalidPreferencesException("Preferences improperly formatted")
 
 	f = open(file, "w+")
@@ -118,7 +150,7 @@ def check_integrity(data, format):
 		correct_format &= (type(data[key]) == value)
 
 		if (not correct_format):
-			print "VALUE ERROR (" + key + "): Expected " + value + ", got " + str(type(data[key])) + "for value " + str(data[key])
+			print "VALUE ERROR (" + key + "): Expected " + str(value) + ", got " + str(type(data[key])) + " for value " + str(data[key])
 			break
 
 	return correct_format

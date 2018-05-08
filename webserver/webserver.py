@@ -8,11 +8,11 @@ import ctypes
 from multiprocessing import Pipe
 from threading import Thread
 
-
 STREAM_FRAMERATE = 30
 
 #preferences value
-current_prefs = Prefs.load("prefs.vpr") 
+current_prefs = Prefs.load("prefs.vpr")
+app_prefs = Prefs.load_app_prefs("app.prefs")
 
 #last requested timestamp for mjpg
 stream_timestamp = time.time()
@@ -54,6 +54,7 @@ def response_daemon():
 		response = {}
 		response["stream_timestamp"] = stream_timestamp
 		response["prefs"] = current_prefs
+		response["app_prefs"] = app_prefs
 		try:
 			jpeg_pipe.send(response)
 		except EOFError:
@@ -91,6 +92,22 @@ def generate_stream():
 		yield header + jpeg_data
 		time.sleep(1 / float(STREAM_FRAMERATE))
 
+'''
+Update application config settins based on request from client
+TODO: Generalize with /fuck implementation: merge onto same url and format?
+TODO: Move to POST requests with body instead of GET
+'''
+@app.route("/app_prefs", methods = ["GET"])
+def process_app_data():
+	data = request.args
+	if (options_data_valid(data, Prefs.application_prefs_format)):
+		f_print("App prefs: Request formatted properly!")
+		for key, value in data.iteritems():
+			app_prefs[key] = Prefs.application_prefs_format[key](value)
+		#TODO: Write to file
+	else:
+		f_print("App prefs: Malformed request, ignoring...")
+
 
 '''
 Update configuration settings based on request from client
@@ -101,10 +118,11 @@ def process_data():
 	f_print("Got data " + str(data))
 
 	#sets data values if data properly formatted
-	if (options_data_valid(data)):	 
+	if (options_data_valid(data, Prefs.prefs_format)):	 
 		f_print("Request formatted properly!")
 		for key, value in data.iteritems():
-			current_prefs[key] = Prefs.format[key](value)
+			current_prefs[key] = Prefs.prefs_format[key](value)
+		#TODO: Write to file
 	else:
 		f_print("Malformed request, ignoring...")
 
@@ -115,16 +133,16 @@ Checks if incoming GET preference changes are valid
 Inverse of Prefs.check_integrity: checks if all elements of data are in format,
 rather than all elements of format are in data
 '''
-def options_data_valid(data): 
+def options_data_valid(data, schema): 
 	correct_format = True
 	for key, value in data.iteritems():
-		correct_format &= (key in Prefs.format)
+		correct_format &= (key in schema)
 
 		if (not correct_format):
 			break
 
 		try:
-			n = Prefs.format[key](value)
+			n = schema[key](value)
 		except ValueError:
 			correct_format = False
 
