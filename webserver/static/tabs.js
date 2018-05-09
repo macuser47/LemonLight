@@ -205,7 +205,7 @@ $(document).ready(function() {
 	bindSlider("hueThreshold", "hueText", "Hue", ["hue_min", "hue_max"]);
 	bindSlider("satThreshold", "satText", "Saturation", ["sat_min", "sat_max"]);
 	bindSlider("valThreshold", "valText", "Value", ["val_min", "val_max"]);
-	bindSlider("areaFilter", "areaText", "Target Area (% of image)", ["area_min", "area_max"], function(x) { return 100 * Math.pow(x / 100, 4); });
+	bindSlider("areaFilter", "areaText", "Target Area (% of image)", ["area_min", "area_max"], function(x) { return ; });
 	bindSlider("fullFilter", "fullText", "Target Fullness (% of bounding rectangle)", ["convexity_min", "convexity_max"]);
 	bindSlider("aspectFilter", "aspectText", "Target Aspect Ratio (W/H)", ["aspect_min", "aspect_max"], function(x) { return 20 * Math.pow(x / 20, 2); });
 
@@ -363,6 +363,7 @@ function loadPrefs()
 function setPrefs(data) {
 	// parse json to data object
 	var obj = JSON.parse(data);
+	console.log(obj);
 	// input: camera orientation, exposure, rbalance, bbalance
 	$("#orientation-select")[0].selectedIndex = obj.image_flip;
 	setSlider("expSlider", obj.exposure);
@@ -374,9 +375,9 @@ function setPrefs(data) {
 	setSlider("valThreshold", [obj.val_min, obj.val_max]);
 	// contour filtering: sorting, area, fullness, aspect ratio
 	$("#sorting-select")[0].selectedIndex = obj.contour_sort_final;
-	setSlider("areaFilter", [obj.area_min, obj.area_max]);
+	setSlider("areaFilter", [obj.area_min, obj.area_max], function(x) { return 100 * Math.pow(x / 100, 0.25); });
 	setSlider("fullFilter", [obj.convexity_min, obj.convexity_max]);
-	setSlider("aspectFilter", [obj.aspect_min, obj.aspect_max]);
+	setSlider("aspectFilter", [obj.aspect_min, obj.aspect_max], function(x) { return 100 * Math.pow(x / 100, 0.5); });
 	// output: region, grouping, crosshair mode
 	$("#region-select")[0].selectedIndex = obj.desired_contour_region;
 	$("#grouping-select")[0].selectedIndex = obj.contour_grouping;
@@ -400,8 +401,8 @@ function download(filename, text) {
 }
 
 // allows you to set a slider and update it
-function setSlider(sliderID, value)
+function setSlider(sliderID, value, inverse = function(x) { return x; })
 {
-	$("#" + sliderID).slider("setValue", value);
+	$("#" + sliderID).slider("setValue", inverse(value));
 	$("#" + sliderID).trigger("slide");
 }
