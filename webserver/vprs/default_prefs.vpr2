@@ -1,5 +1,5 @@
 {
-    "area_max": 100,
+    "area_max": 100.0,
     "area_min": 0.0835,
     "aspect_max": 20,
     "aspect_min": 0,
