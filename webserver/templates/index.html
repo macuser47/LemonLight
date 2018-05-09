@@ -295,6 +295,68 @@
 	</div>
 	</section>
 
+	<!-- Contour filtering section -->
+	<section id="contourfiltering" style="display: none;">
+
+	<!-- Contour sorting dropdown -->
+	<div id="sorting" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Contour Sorting Mode</p>
+		</div>
+		<select class="form-control" id="sorting-select">
+			<option>Largest</option>
+			<option>Smallest</option>
+			<option>Highest</option>
+			<option>Lowest</option>
+			<option>Rightmost</option>
+			<option>Leftmost</option>
+			<option>Closest</option>
+		</select>
+	</div>
+
+	<!-- Area slider -->
+	<div id="area" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="areaText" class="aligncenter">Target Area (% of image): 0-100</p>
+			<p class="alignright">100</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="areaFilter" type="text" class="" value="" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="[0,100]"/>
+		<script>
+		$("#areaFilter").slider({});
+		</script>
+	</div>
+
+	<!-- Fullness slider -->
+	<div id="fullness" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="fullText" class="aligncenter">Target Fullness (% of bounding rectangle): 0-100</p>
+			<p class="alignright">100</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="fullFilter" type="text" class="" value="" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="[0,100]"/>
+		<script>
+		$("#fullFilter").slider({});
+		</script>
+	</div>
+
+	<!-- Aspect Ratio slider -->
+	<div id="aspect" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="aspectText" class="aligncenter">Target Aspect Ratio (W/H): 0-20</p>
+			<p class="alignright">20</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="aspectFilter" type="text" class="" value="" data-slider-min="0" data-slider-max="20" data-slider-step="1" data-slider-value="[0,20]"/>
+		<script>
+		$("#aspectFilter").slider({});
+		</script>
+	</div>
+	</section>
+
 <!-- end mainUI -->
 </div>
 

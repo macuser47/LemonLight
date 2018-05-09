@@ -95,12 +95,17 @@ $(document).ready(function()
 	bindSlider("hueThreshold", "hueText", "Hue", ["hue_min", "hue_max"]);
 	bindSlider("satThreshold", "satText", "Saturation", ["sat_min", "sat_max"]);
 	bindSlider("valThreshold", "valText", "Value", ["val_min", "val_max"]);
+	bindSlider("areaFilter", "areaText", "Target Area (% of image)", ["area_min", "area_max"], function(x) { return 100 * Math.pow(x / 100, 4); });
+	bindSlider("fullFilter", "fullText", "Target Fullness (% of bounding rectangle)", ["convexity_min", "convexity_max"]);
+	bindSlider("aspectFilter", "aspectText", "Target Aspect Ratio (W/H)", ["aspect_min", "aspect_max"], function(x) { return 20 * Math.pow(x / 20, 2); });
 
 	// handle dropdown menus
-	bindDropdown("source-select", "source");
+	bindDropdown("source-select", "image_source");
+	bindDropdown("orientation-select", "image_flip");
 	bindDropdown("feed-select", "feed");
 	bindDropdown("erosion-select", "erosion");
 	bindDropdown("dilation-select", "dilation");
+	bindDropdown("sorting-select", "contour_sort_final");
 
 	// handle tab clicks
 	$('.nav-linktabs > li > a').click(function(event) {
@@ -147,14 +152,14 @@ function bindDropdown(dropdownID, param)
 	$("#" + dropdownID).change(function() {
 		// find args, paramName and dropdown value
 		var obj = {};
-		obj[param] = $(this).val();
+		obj[param] = $(this)[0].selectedIndex;
 		// send request to flask server
 		$.get("/fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
 	});
 }
 
 // binds a slider to output to the flask server
-function bindSlider(sliderID, textID, name, params)
+function bindSlider(sliderID, textID, name, params, conversion = function(x) { return x; })
 {
 	$("#" + sliderID).on("slide", function(event) {
 		// get request to Flask server
@@ -169,12 +174,22 @@ function bindSlider(sliderID, textID, name, params)
 		// create string and params
 		for (var i = 0; i < params.length; i++)
 		{
-			obj[params[i]] = value[i];
+			var cvalue = conversion(value[i]);
+			// round value to 5 sig figs
+			if (cvalue > 1)
+			{
+				cvalue = parseFloat(cvalue.toFixed(4 - Math.floor(Math.log10(cvalue))));
+			}
+			else
+			{
+				cvalue = parseFloat(cvalue.toFixed(4));
+			}
+			obj[params[i]] = cvalue;
 			if (i > 0)
 			{
 				str += "-";
 			}
-			str += value[i];
+			str += cvalue;
 		}
 		// send request to flask server
 		$.get("/fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
