@@ -49,14 +49,14 @@
 	</h4>
 	<hr style="margin-top: -0.25em"/>
 
+	<div id="target-info" style="display: flex; margin: auto;"></div>
 	<div class="container-fluid" style="display: flex;">
 		<img src="/stream.mjpg" id="stream"/>
 	</div>
 
-	<!-- crosshair buttons -->
+	<!-- snapshot button -->
 	<div class="container-fluid" style="display: flex;">
-		<button type="button" class="btn btn-success btn-xhair" style="float: left">Calibrate Crosshair</button>
-		<button type="button" class="btn btn-danger btn-xhair">Reset Crosshair</button>
+		<button id="snapshot" type="button" class="btn btn-success btn-xhair" style="margin: auto">Snapshot</button>
 	</div>
 
 </div>
@@ -115,7 +115,10 @@
 	<span>
 		<button type="submit" class="btn btn-primary btn-small" id="pipeline-default">Make Default</button>
 		<button type="submit" class="btn btn-primary btn-small" id="pipeline-download">Download</button>
-		<button type="submit" class="btn btn-primary btn-small" id="pipeline-upload">Upload</button>
+		<form id='form-upload' method="POST" enctype="multipart/form-data" style="display: inline-block;"> 
+			<input id='file-upload' type='file' name='filename' hidden/>
+			<button type="submit" class="btn btn-primary btn-small" id="pipeline-upload">Upload</button>
+		</form> 
 	</span>
 	</div>
 

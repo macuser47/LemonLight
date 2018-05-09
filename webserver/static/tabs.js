@@ -1,6 +1,20 @@
 // handles js
-$(document).ready(function()
-{
+$(document).ready(function() {
+	// at start, ajax to app_prefs to get current pipeline/ignore_nt state
+	$.get("/fuck").done(function(data) {
+		var obj = JSON.parse(data);
+		$("#pipeline-select")[0].selectedIndex = obj.current_pipeline;
+		$("#ignore-nt").prop('checked', obj.ignore_nt);
+	});
+	loadPrefs();
+
+	// constantly poll for target data: tv, tl, tx, ty, ta, ts
+	setInterval(function() {
+		$.get("/data").done(function(data) {
+			$("#target-info").text(data);
+		});
+	}, 100);
+
 	// link pixel buttons to set variables
 	bindPixelButton("eyedropper");
 	bindPixelButton("add-pixel");
@@ -122,6 +136,53 @@ $(document).ready(function()
 		}
 	});
 
+	// make the reset buttons reset the xhair offsets
+	$("#calibrate-reset-a").click(function(event) {
+		$.get("/fuck?" + $.param({cross_a_x: 0, cross_a_y: 0})).done(sliderDone).fail(sliderFail);
+	});
+	$("#calibrate-reset-b").click(function(event) {
+		$.get("/fuck?" + $.param({cross_b_x: 0, cross_b_y: 0})).done(sliderDone).fail(sliderFail);
+	});
+
+	// make the snapshot button take a snapshot
+	$("#snapshot").click(function(event) {
+		$.get("/the_actual_fuck?" + $.param({snapshot: true})).done(sliderDone).fail(sliderFail);
+	});
+
+	// set default pipeline
+	$("#pipeline-default").click(function(event) {
+		$.get("/app_prefs?" + $.param({default_pipeline: $("#pipeline-select")[0].selectedIndex})).done(sliderDone).fail(sliderFail);
+	});
+
+	// download the current pipeline
+	$("#pipeline-download").click(function(event) {
+		$.get("/fuck").done(function(data) {
+			download("prefs" + $("#pipeline-select")[0].selectedIndex + ".vpr2", JSON.stringify(JSON.parse(data), null, 4));
+		}).fail(sliderFail);
+	});
+
+	// download the current pipeline
+	$("#pipeline-upload").click(function(event) {
+		$("#file-upload").click();
+	});
+	$("#file-upload").click(function(event) {
+		$("form-upload").submit();
+	});
+	$("form#form-upload").submit(function(e) {
+		e.preventDefault();
+		var formData = new FormData(this);	
+		$.ajax({
+			url: "the_actual_fuck",
+			type: "POST",
+			data: formData,
+			success: function (data) {
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		});
+	});
+
 	// make the user unable to edit the pipeline if the ignore checkbox is checked
 	$("#ignore-nt").change(function(){
 		if (this.checked)
@@ -132,6 +193,7 @@ $(document).ready(function()
 		{
 			$("#pipeline-select").removeAttr("disabled");
 		}
+		$.get("/app_prefs?" + $.param({ignore_nt: this.checked})).done(sliderDone).fail(sliderFail);
 	});
 
 	// make buttons rounded squares
@@ -152,15 +214,23 @@ $(document).ready(function()
 	bindSlider("aspectFilter", "aspectText", "Target Aspect Ratio (W/H)", ["aspect_min", "aspect_max"], function(x) { return 20 * Math.pow(x / 20, 2); });
 
 	// handle dropdown menus
-	bindDropdown("source-select", "image_source");
+	bindDropdown("source-select", "source", "the_actual_fuck");
 	bindDropdown("orientation-select", "image_flip");
-	bindDropdown("feed-select", "feed");
+	bindDropdown("feed-select", "feed", "the_actual_fuck");
 	bindDropdown("erosion-select", "erosion");
 	bindDropdown("dilation-select", "dilation");
 	bindDropdown("sorting-select", "contour_sort_final");
 	bindDropdown("region-select", "desired_contour_region");
 	bindDropdown("grouping-select", "contour_grouping");
 	bindDropdown("xhair-select", "calibration_type");
+
+	// handle pipeline choose dropdown
+	$("#pipeline-select").change(function() {
+		var obj = {};
+		obj["current_pipeline"] = $(this)[0].selectedIndex;
+		// send request to flask server
+		$.get("/app_prefs?" + $.param(obj)).done(loadPrefs).fail(loadPrefs);
+	});
 
 	// handle tab clicks
 	$('.nav-linktabs > li > a').click(function(event) {
@@ -202,14 +272,14 @@ var sliderDone = function( jqXHR, textStatus, errorThrown ) {
 }
 
 // binds a dropdown menu to output to the flask server
-function bindDropdown(dropdownID, param)
+function bindDropdown(dropdownID, param, url = "fuck")
 {
 	$("#" + dropdownID).change(function() {
 		// find args, paramName and dropdown value
 		var obj = {};
 		obj[param] = $(this)[0].selectedIndex;
 		// send request to flask server
-		$.get("/fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
+		$.get("/" + url + "?" + $.param(obj)).done(sliderDone).fail(sliderFail);
 	});
 }
 
@@ -285,4 +355,51 @@ function pixelButtonSend(event, name, url = "the_actual_fuck", dimensions = ["x"
 		obj[name + params[i]] = pos[dimensions[i]];
 	}
 	$.get("/" + url + "?" + $.param(obj)).done(sliderDone).fail(sliderFail);
+}
+
+// gets current pipeline data from server and loads in
+function loadPrefs()
+{
+	$.get("/fuck").done(setPrefs).fail(sliderFail);
+}
+
+// sets UI data, loaded from pipeline.
+function setPrefs(data) {
+	// parse json to data object
+	var obj = JSON.parse(data);
+	// input: camera orientation, exposure, rbalance, bbalance
+	console.log("running " + obj.image_flip)
+	$("#orientation-select")[0].selectedIndex = obj.image_flip;
+	$("#expSlider").val(obj.exposure);
+	$("#rbalSlider").val(obj.red_balance);
+	$("#bbalSlider").val(obj.blue_balance);
+	// thresholding: hue, saturation, value
+	$("#hueThreshold").val([obj.hue_min, obj.hue_max]);
+	$("#satThreshold").val([obj.sat_min, obj.sat_max]);
+	$("#valThreshold").val([obj.val_min, obj.val_max]);
+	// contour filtering: sorting, area, fullness, aspect ratio
+	$("#sorting-select")[0].selectedIndex = obj.contour_sort_final;
+	$("#areaFilter").val([obj.area_min, obj.area_max]);
+	$("#fullFilter").val([obj.convexity_min, obj.convexity_max]);
+	$("#aspectFilter").val([obj.aspect_min, obj.aspect_max]);
+	// output: region, grouping, crosshair mode
+	$("#region-select")[0].selectedIndex = obj.desired_contour_region;
+	$("#grouping-select")[0].selectedIndex = obj.contour_grouping;
+	$("#xhair-select")[0].selectedIndex = obj.calibration_type;
+	// trigger change to xhair-select
+	$("#xhair-select").trigger("change");
+}
+
+// download a file with the given text
+function download(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
 }
