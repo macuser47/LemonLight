@@ -97,7 +97,7 @@ $(document).ready(function() {
 		$("#pipeline-form").show();
 		$("#pipeline-form").select();
 		event.stopPropagation();
-	})
+	});
 	// on click outside, then set the text field to the name
 	$(document).click(function(event)
 	{
@@ -287,7 +287,7 @@ function bindSlider(sliderID, textID, name, params, conversion = function(x) { r
 		var obj = {};
 		var str = "";
 		// convert single value to array if necessary
-		var value = event.value;
+		var value = $("#" + sliderID).slider("getValue");
 		if (value.constructor !== Array)
 		{
 			value = [value];
@@ -365,18 +365,18 @@ function setPrefs(data) {
 	var obj = JSON.parse(data);
 	// input: camera orientation, exposure, rbalance, bbalance
 	$("#orientation-select")[0].selectedIndex = obj.image_flip;
-	$("#expSlider").val(obj.exposure);
-	$("#rbalSlider").val(obj.red_balance);
-	$("#bbalSlider").val(obj.blue_balance);
+	setSlider("expSlider", obj.exposure);
+	setSlider("rbalSlider", obj.red_balance);
+	setSlider("bbalSlider", obj.blue_balance);
 	// thresholding: hue, saturation, value
-	$("#hueThreshold").val([obj.hue_min, obj.hue_max]);
-	$("#satThreshold").val([obj.sat_min, obj.sat_max]);
-	$("#valThreshold").val([obj.val_min, obj.val_max]);
+	setSlider("hueThreshold", [obj.hue_min, obj.hue_max]);
+	setSlider("satThreshold", [obj.sat_min, obj.sat_max]);
+	setSlider("valThreshold", [obj.val_min, obj.val_max]);
 	// contour filtering: sorting, area, fullness, aspect ratio
 	$("#sorting-select")[0].selectedIndex = obj.contour_sort_final;
-	$("#areaFilter").val([obj.area_min, obj.area_max]);
-	$("#fullFilter").val([obj.convexity_min, obj.convexity_max]);
-	$("#aspectFilter").val([obj.aspect_min, obj.aspect_max]);
+	setSlider("areaFilter", [obj.area_min, obj.area_max]);
+	setSlider("fullFilter", [obj.convexity_min, obj.convexity_max]);
+	setSlider("aspectFilter", [obj.aspect_min, obj.aspect_max]);
 	// output: region, grouping, crosshair mode
 	$("#region-select")[0].selectedIndex = obj.desired_contour_region;
 	$("#grouping-select")[0].selectedIndex = obj.contour_grouping;
@@ -397,4 +397,11 @@ function download(filename, text) {
   element.click();
 
   document.body.removeChild(element);
+}
+
+// allows you to set a slider and update it
+function setSlider(sliderID, value)
+{
+	$("#" + sliderID).slider("setValue", value);
+	$("#" + sliderID).trigger("slide");
 }
