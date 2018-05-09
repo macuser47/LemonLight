@@ -1,9 +1,29 @@
 // handles js
 $(document).ready(function()
 {
+	// link pixel buttons to set variables
+	bindPixelButton("eyedropper");
+	bindPixelButton("add-pixel");
+	bindPixelButton("subtract-pixel");
+	// handle eyedropper/add/subtract clicks on the stream
+	$("#stream").click(function(event) {
+		// check for eyedropper
+		if (pixelButtons["eyedropper"])
+		{
+			pixelButtonSend(event, "eyedropper");
+		}
+		else if (pixelButtons["add-pixel"])
+		{
+			pixelButtonSend(event, "add");
+		}
+		else if (pixelButtons["subtract-pixel"])
+		{
+			pixelButtonSend(event, "subtract");
+		}
+	});
+
 	// hide the pipeline form at start
 	$("#pipeline-form").hide();
-
 	// allow user to rename the pipeline
 	$("#pipeline-name").mouseenter(function(event) {
 		$(this).css("background-color", "#ADD8E6");
@@ -49,7 +69,7 @@ $(document).ready(function()
 			$(document).click();
 		}
 	});
-	
+
 	// make the user unable to edit the pipeline if the ignore checkbox is checked
 	$("#ignore-nt").change(function(){
 		if (this.checked)
@@ -75,6 +95,17 @@ $(document).ready(function()
 	bindSlider("hueThreshold", "hueText", "Hue", ["hue_min", "hue_max"]);
 	bindSlider("satThreshold", "satText", "Saturation", ["sat_min", "sat_max"]);
 	bindSlider("valThreshold", "valText", "Value", ["val_min", "val_max"]);
+	bindSlider("areaFilter", "areaText", "Target Area (% of image)", ["area_min", "area_max"], function(x) { return 100 * Math.pow(x / 100, 4); });
+	bindSlider("fullFilter", "fullText", "Target Fullness (% of bounding rectangle)", ["convexity_min", "convexity_max"]);
+	bindSlider("aspectFilter", "aspectText", "Target Aspect Ratio (W/H)", ["aspect_min", "aspect_max"], function(x) { return 20 * Math.pow(x / 20, 2); });
+
+	// handle dropdown menus
+	bindDropdown("source-select", "image_source");
+	bindDropdown("orientation-select", "image_flip");
+	bindDropdown("feed-select", "feed");
+	bindDropdown("erosion-select", "erosion");
+	bindDropdown("dilation-select", "dilation");
+	bindDropdown("sorting-select", "contour_sort_final");
 
 	// handle tab clicks
 	$('.nav-linktabs > li > a').click(function(event) {
@@ -115,14 +146,27 @@ var sliderDone = function( jqXHR, textStatus, errorThrown ) {
 	$("#result").html(textStatus);
 }
 
-function bindSlider(sliderID, textID, name, params)
+// binds a dropdown menu to output to the flask server
+function bindDropdown(dropdownID, param)
 {
-	$("#" + sliderID).on("slide", function(slideEvt) {
+	$("#" + dropdownID).change(function() {
+		// find args, paramName and dropdown value
+		var obj = {};
+		obj[param] = $(this)[0].selectedIndex;
+		// send request to flask server
+		$.get("/fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
+	});
+}
+
+// binds a slider to output to the flask server
+function bindSlider(sliderID, textID, name, params, conversion = function(x) { return x; })
+{
+	$("#" + sliderID).on("slide", function(event) {
 		// get request to Flask server
 		var obj = {};
 		var str = "";
 		// convert single value to array if necessary
-		var value = slideEvt.value;
+		var value = event.value;
 		if (value.constructor !== Array)
 		{
 			value = [value];
@@ -130,16 +174,58 @@ function bindSlider(sliderID, textID, name, params)
 		// create string and params
 		for (var i = 0; i < params.length; i++)
 		{
-			obj[params[i]] = value[i];
+			var cvalue = conversion(value[i]);
+			// round value to 5 sig figs
+			if (cvalue > 1)
+			{
+				cvalue = parseFloat(cvalue.toFixed(4 - Math.floor(Math.log10(cvalue))));
+			}
+			else
+			{
+				cvalue = parseFloat(cvalue.toFixed(4));
+			}
+			obj[params[i]] = cvalue;
 			if (i > 0)
 			{
 				str += "-";
 			}
-			str += value[i];
+			str += cvalue;
 		}
 		// send request to flask server
 		$.get("/fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
 		// set text
 		$("#" + textID).text(name + ": " + str);
 	});
+}
+
+// we can't use .is(":focus") directly on the click, since that will be reset before the event
+// so instead we store the value until the click event fires, then reset it
+var pixelButtons = {};
+function bindPixelButton(buttonID)
+{
+	pixelButtons[buttonID] = false;
+	$(document).click(function(event) {
+		pixelButtons[buttonID] = $("#" + buttonID).is(":focus");
+	});
+}
+// send a request from a pixel button when the stream is clicked on
+function pixelButtonSend(event, name)
+{
+	// get click position
+	var offset = $(event.target).offset();
+	var x = event.pageX - offset.left;
+	var y = event.pageY - offset.top;
+	// convert to 320x240
+	var size = {x: $(event.target).width(), y: $(event.target).height()};
+	var pos = {x: 0, y: 0};
+	if (size.x > 0 && size.y > 0)
+	{
+		pos.x = x * 320 / size.x;
+		pos.y = y * 240 / size.y;
+	}
+	// send get request
+	var obj = {};
+	obj[name + "X"] = pos.x;
+	obj[name + "Y"] = pos.y;
+	$.get("/the_actual_fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
 }

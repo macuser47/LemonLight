@@ -49,7 +49,17 @@
 	</h4>
 	<hr style="margin-top: -0.25em"/>
 
-	<img src="/stream.mjpg" width="100%"/>
+	<div class="container-fluid" style="display: flex;">
+	<!--img src="/stream.mjpg" id="stream"/-->
+	<img src="https://www.chiefdelphi.com/media/img/1fd/1fd76c92f023d738dd58c0c73ceda18b_l.jpg" id="stream"/>
+	</div>
+
+	<!-- crosshair buttons -->
+	<div class="container-fluid" style="display: flex;">
+		<button type="button" class="btn btn-success btn-xhair" style="float: left">Calibrate Crosshair</button>
+		<button type="button" class="btn btn-danger btn-xhair">Reset Crosshair</button>
+	</div>
+
 </div>
 
 <div id="options" class="mainUI">
@@ -98,15 +108,15 @@
 	<div  class="container-fluid" style="display: flex; align-items: center;">
 
 	<div style="float: left; width: 50%; margin-right: 10px">
-	<span id="pipeline-name" class="inline" style="margin: 5px;">Pipeline_Name</span>
-	<input type="name" class="form-control" id="pipeline-form" style="font-size: 14px"/>
+	<span id="pipeline-name" class="inline" style="margin: 5px; font-size: 16px;">Pipeline_Name</span>
+	<input type="name" class="form-control" id="pipeline-form" style="font-size: 16px"/>
 	</div>
 
 	<div>
 	<span>
-		<button type="submit" class="btn btn-primary btn-small">Make Default</button>
-		<button type="submit" class="btn btn-primary btn-small">Download</button>
-		<button type="submit" class="btn btn-primary btn-small">Upload</button>
+		<button type="submit" class="btn btn-primary btn-small" id="pipeline-default">Make Default</button>
+		<button type="submit" class="btn btn-primary btn-small" id="pipeline-download">Download</button>
+		<button type="submit" class="btn btn-primary btn-small" id="pipeline-upload">Upload</button>
 	</span>
 	</div>
 
@@ -200,6 +210,26 @@
 
 	<!-- Thresholding section -->
 	<section id="thresholding" style="display: none;">
+	<!-- Video feed dropdown -->
+	<div id="video-feed" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Image Source</p>
+		</div>
+		<select class="form-control" id="feed-select">
+			<option>Raw Image</option>
+			<option>Thresholded Image</option>
+		</select>
+	</div>
+
+	<!-- three buttons, Eyedropper, Add pixel, Subtract pixel -->
+	<div class="vcomponent">
+	<button type="button" class="btn btn-primary btn-med" id="eyedropper">Eyedropper</button>
+	<div class="btn-group" role="group">
+		<button type="button" class="btn btn-success btn-med" id="add-pixel">Add Pixel</button>
+		<button type="button" class="btn btn-danger btn-med" id="subtract-pixel">Subtract pixel</button>
+	</div>
+	</div>
+
 	<!-- Hue slider -->
 	<div id="hue" class="vcomponent">
 		<div class="textbox">
@@ -242,12 +272,89 @@
 		</script>
 	</div>
 
-	<br>
-	<br>
-	<div id="result">
-		No requests sent yet.
+	<!-- Erosion dropdown -->
+	<div id="erosion" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Erosion</p>
+		</div>
+		<select class="form-control" id="erosion-select">
+			<option>0</option>
+			<option>1</option>
+		</select>
 	</div>
 
+	<!-- Dilation dropdown -->
+	<div id="dilation" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Dilation</p>
+		</div>
+		<select class="form-control" id="dilation-select">
+			<option>0</option>
+			<option>1</option>
+		</select>
+	</div>
+	</section>
+
+	<!-- Contour filtering section -->
+	<section id="contourfiltering" style="display: none;">
+
+	<!-- Contour sorting dropdown -->
+	<div id="sorting" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Contour Sorting Mode</p>
+		</div>
+		<select class="form-control" id="sorting-select">
+			<option>Largest</option>
+			<option>Smallest</option>
+			<option>Highest</option>
+			<option>Lowest</option>
+			<option>Rightmost</option>
+			<option>Leftmost</option>
+			<option>Closest</option>
+		</select>
+	</div>
+
+	<!-- Area slider -->
+	<div id="area" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="areaText" class="aligncenter">Target Area (% of image): 0-100</p>
+			<p class="alignright">100</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="areaFilter" type="text" class="" value="" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="[0,100]"/>
+		<script>
+		$("#areaFilter").slider({});
+		</script>
+	</div>
+
+	<!-- Fullness slider -->
+	<div id="fullness" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="fullText" class="aligncenter">Target Fullness (% of bounding rectangle): 0-100</p>
+			<p class="alignright">100</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="fullFilter" type="text" class="" value="" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="[0,100]"/>
+		<script>
+		$("#fullFilter").slider({});
+		</script>
+	</div>
+
+	<!-- Aspect Ratio slider -->
+	<div id="aspect" class="vcomponent">
+		<div class="textbox">
+			<p class="alignleft">0</p>
+			<p id="aspectText" class="aligncenter">Target Aspect Ratio (W/H): 0-20</p>
+			<p class="alignright">20</p>
+			<div style="clear: both;"></div>
+		</div>
+		<input id="aspectFilter" type="text" class="" value="" data-slider-min="0" data-slider-max="20" data-slider-step="1" data-slider-value="[0,20]"/>
+		<script>
+		$("#aspectFilter").slider({});
+		</script>
+	</div>
 	</section>
 
 <!-- end mainUI -->
@@ -263,6 +370,12 @@
 </section>
 
 <!-- end content -->
+</div>
+
+<br>
+<br>
+<div id="result">
+	No requests sent yet.
 </div>
 
 </body>
