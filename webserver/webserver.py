@@ -24,8 +24,8 @@ global jpeg_data
 jpeg_data = cv2.imencode('.jpg', cv2.imread("image.jpeg"))[1].tostring()
 
 app = Flask(__name__)
-app.config["VPR2_UPLOAD_FOLDER"] = "/vprs"
-app.config["VPR_UPLOAD_FOLDER"] = "/vprs/legacy"
+app.config["VPR2_UPLOAD_FOLDER"] = "vprs"
+app.config["VPR_UPLOAD_FOLDER"] = "vprs/legacy"
 
 
 '''
@@ -102,6 +102,7 @@ General immediate event handler for the webserver
 '''
 @app.route("/the_actual_fuck", methods = ["GET", "POST"])
 def handle_events():
+	global current_prefs
 	#handle vpr uploads
 	if (request.method == "POST"):
 		if ("file" in request.files):
@@ -110,18 +111,27 @@ def handle_events():
 			if (extension_valid):
 				if (extension == "vpr2"):
 					filename = "prefs" + str(app_prefs["current_pipeline"]) + ".vpr2"
-					file.save(os.path.join(app.config['VPR2_UPLOAD_FOLDER'], filename))
+					full_path = os.path.join(app.config['VPR2_UPLOAD_FOLDER'], filename)
+					file.save(full_path)
+					try:
+						current_prefs = Prefs.load(full_path)
+					except Prefs.InvalidPreferencesException:
+						f_print("Err: Newly uploaded vpr2 improperly formatted")
+						return "File format incomplete or damaged"
 				elif (extension == "vpr"): #legacy handling
 					filename = "prefs.vpr"
 					final_filename = "prefs" + str(app_prefs["current_pipeline"]) + ".vpr2"
 					file.save(os.path.join(app.config['VPR_UPLOAD_FOLDER'], filename))
 					try:
-						Prefs.save( Prefs.load_legacy("/vprs/legacy/prefs.vpr"), final_filename )
+						current_prefs = Prefs.load_legacy("vprs/legacy/prefs.vpr")
+						Prefs.save(current_prefs, final_filename )
 					except Prefs.InvalidPreferencesException:
 						f_print("Err: Newly uploaded vpr improperly formatted")
 						return "File format incomplete or damaged"
 	else:
 		pass
+
+	return "Request Received"
 
 
 def validate_extension(filename, extensions):
