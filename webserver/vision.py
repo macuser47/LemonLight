@@ -6,7 +6,7 @@ from threading import Thread
 
 global camera_capture
 current_frame = cv2.cvtColor(cv2.imread("image.jpeg"), cv2.COLOR_BGR2HSV)
-current_prefs = Prefs.load("vprs/prefs0.vpr")
+current_prefs = Prefs.load("vprs/prefs0.vpr2")
 
 resolution = (320, 240)
 
