@@ -149,7 +149,10 @@ def process_app_data():
 		#Do server-specific event handling for prefs data
 		if ("current_pipeline" in data):
 			#load new pipeline
-			current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["current_pipeline"])  + ".vpr2")
+			try:
+				current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["current_pipeline"])  + ".vpr2")
+			except IOError:
+				current_prefs = Prefs.load("vprs/default_prefs.vpr2")
 
 	else:
 		f_print("App prefs: Malformed request, ignoring...")
