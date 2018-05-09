@@ -64,8 +64,6 @@ def compute_contour_data():
 			"tl": 0.0 #TODO:latency calculation
 		}
 
-		pprint.pprint(nt_data)
-
 		#construction secondary contour responses
 		contours = []
 		for contour, box in current_contours[1:]:
