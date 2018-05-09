@@ -8,6 +8,13 @@ $(document).ready(function() {
 	});
 	loadPrefs();
 
+	// constantly poll for target data: tv, tl, tx, ty, ta, ts
+	setInterval(function() {
+		$.get("/data").done(function(data) {
+			$("#target-info").text(data);
+		});
+	}, 100);
+
 	// link pixel buttons to set variables
 	bindPixelButton("eyedropper");
 	bindPixelButton("add-pixel");
