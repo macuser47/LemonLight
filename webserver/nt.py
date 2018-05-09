@@ -1,4 +1,5 @@
 from networktables import NetworkTables
+import preferences as Prefs
 
 nt_response_format = {
     "tv":int,
@@ -40,7 +41,7 @@ def init(host_ip):
 Verifies response dict and puts to networktables
 '''
 def push(response):
-    if (check_schema(response, nt_response_format)):
+    if (Prefs.schema_subset(response, nt_response_format)):
         for key, value in response.iteritems():
             table.putValue(key, value)
     else:
@@ -53,7 +54,7 @@ Verifies raw contours and puts to networktables
 def push_contours_raw(contours):
     schema_valid = True
     for contour in contours:
-        schema_valid &= check_schema(contour, nt_raw_contour_format)
+        schema_valid &= Prefs.schema_subset(contour, nt_raw_contour_format)
     if (schema_valid):
         for index, contour in enumerate(contours):
             for key, value in contour.iteritems():
@@ -71,21 +72,3 @@ def poll():
     for key, _ in nt_input.iteritems():
         state[key] = table.getValue(key, None)
     return state
-
-'''
-Does schema check of dict vs format dict
-https://stackoverflow.com/a/45812573
-'''
-def check_schema(dictionary, format):
-    if isinstance(format, dict) and isinstance (dictionary, dict):
-        # format is a dict of types or other dicts
-        return all(k in dictionary and check_schema(dictionary[k], format[k]) for k in format)
-    if isinstance(format, list) and isinstance (dictionary, list):
-        # format is list in the form [type or dict]
-        return all(check_schema(c, format[0]) for c in dictionary)
-    elif isinstance(format, type):
-        # format is the type of dictionary
-        return isinstance (dictionary, format) | (dictionary is None)
-    else:
-        # format is neither a dict, nor list, not type
-        return False

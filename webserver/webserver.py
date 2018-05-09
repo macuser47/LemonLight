@@ -169,7 +169,6 @@ def process_data():
 
 	#sets data values if data properly formatted
 	if (options_data_valid(data, Prefs.prefs_format)):	 
-	#if (Prefs.schema_subset(data, Prefs.prefs_format)):
 		f_print("Request formatted properly!")
 		for key, value in data.iteritems():
 			current_prefs[key] = Prefs.prefs_format[key](value)
@@ -183,8 +182,7 @@ def process_data():
 
 '''
 Checks if incoming GET preference changes are valid
-Inverse of Prefs.check_integrity: checks if all elements of data are in format,
-rather than all elements of format are in data
+Separate from Prefs.schema_subset because casts from string are required.
 '''
 def options_data_valid(data, schema): 
 	correct_format = True

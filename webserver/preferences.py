@@ -62,7 +62,7 @@ def load_format(file, schema):
 	prefs = json.load(f)
 	f.close()
 
-	if (not check_integrity(prefs, schema)):
+	if (not schema_match(prefs, schema)):
 		raise InvalidPreferencesException("Preferences improperly formatted")
 
 	return prefs
@@ -91,7 +91,7 @@ def load_legacy(file):
 	except:
 		raise InvalidPreferencesException("Legacy Preferences improperly formatted")
 
-	if (not check_integrity(prefs, prefs_format)):
+	if (not schema_match(prefs, prefs_format)):
 		raise InvalidPreferencesException("Legacy Preferences improperly formatted")
 
 	return prefs
@@ -112,7 +112,7 @@ def save(prefs, file):
 Generalized method to save file based on schema
 '''
 def save_format(prefs, file, schema):
-	if (not check_integrity(prefs, schema)):
+	if (not schema_match(prefs, schema)):
 		raise InvalidPreferencesException("Preferences improperly formatted")
 
 	f = open(file, "w+")
@@ -123,7 +123,7 @@ def save_format(prefs, file, schema):
 Save Preferences to non-json legacy vpr
 '''
 def save_legacy(prefs, file):
-	if (not check_integrity(prefs, prefs_format)):
+	if (not schema_match(prefs, prefs_format)):
 		raise InvalidPreferencesException("Preferences improperly formatted")
 
 	f = open(file, "w+")
@@ -132,28 +132,53 @@ def save_legacy(prefs, file):
 
 	f.close()
 
+
 '''
-Checks integrity of preferences dict and returns false
-if elements are missing or of incorrect type
+Checks if dict implements all elements in a schema
+Additional elements are allowed
+Allows None values
+https://stackoverflow.com/a/45812573
 '''
-def check_integrity(data, format):
-	correct_format = True
-	#https://stackoverflow.com/a/3294899
-	for key, value in format.iteritems():
-		correct_format &= (key in data)
+def schema_match(dictionary, schema):
+    if isinstance(schema, dict) and isinstance (dictionary, dict):
+        # schema is a dict of types or other dicts
+        return all(k in dictionary and schema_match(dictionary[k], schema[k]) for k in schema)
+    if isinstance(schema, list) and isinstance (dictionary, list):
+        # schema is list in the form [type or dict]
+        return all(schema_match(c, schema[0]) for c in dictionary)
+    elif isinstance(schema, type):
+        # schema is the type of dictionary
+        return isinstance (dictionary, schema) or (dictionary is None)
+    else:
+        # schema is neither a dict, nor list, not type
+        return False
 
-		if (not correct_format):
-			print "KEY ERROR: " + key
-			break
+'''
+Checks if dictionary is strictly a subset of a schema
+No additional elements are allowed
+'''
+def schema_subset(dictionary, schema):
+    if isinstance(schema, dict) and isinstance (dictionary, dict):
+        # schema is a dict of types or other dicts
+		return all(k in schema and schema_match(dictionary[k], schema[k]) for k in dictionary)
+    if isinstance(schema, list) and isinstance (dictionary, list):
+        # schema is list in the form [type or dict]
+        return all(schema_match(c, schema[0]) for c in dictionary)
+    elif isinstance(schema, type):
+        # schema is the type of dictionary
+		print(isinstance (dictionary, schema) or (dictionary is None))
+		return isinstance (dictionary, schema) or (dictionary is None)
+    else:
+        # schema is neither a dict, nor list, not type
+        return False
 
-		correct_format &= (type(data[key]) == value)
-
-		if (not correct_format):
-			print "VALUE ERROR (" + key + "): Expected " + str(value) + ", got " + str(type(data[key])) + " for value " + str(data[key])
-			break
-
-	return correct_format
-
+'''
+Checks if dict implements all elements in a schema
+No additional elements are allowed
+Allows None values
+'''
+def schema_match_strict(dictionary, schema):
+	return schema_subset(dictionary, schema) and schema_match(dictionary, schema)
 
 class InvalidPreferencesException(Exception):
 	pass

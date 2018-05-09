@@ -47,14 +47,9 @@ def compute_contour_data():
 		current_threshold_image, _, current_contours, contours_found = Vision.filter( Vision.current_frame )
 
 		if (not contours_found):
-			print("[" + str(time.time())[:10] + "] WARNING: NO CONTOURS FOUND")
+			#print("[" + str(time.time())[:10] + "] WARNING: NO CONTOURS FOUND")
 			NT.push({
 				"tv": 0,
-				"tx": 0,
-				"ty": 0,
-				"ta": 0,
-				"ts": 0,
-				"tl": 0.0
 			})
 			continue
 
