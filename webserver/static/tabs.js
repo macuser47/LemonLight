@@ -159,11 +159,10 @@ $(document).ready(function() {
 		$("#file-upload").click();
 	});
 	$("#file-upload").click(function(event) {
-		$("form-upload").submit();
 	});
-	$("form#form-upload").submit(function(e) {
-		e.preventDefault();
-		var formData = new FormData(this);	
+	$("#file-upload").change(function(event) {
+		event.preventDefault();
+		var formData = new FormData($("#form-upload")[0]);
 		$.ajax({
 			url: "the_actual_fuck",
 			type: "POST",
@@ -174,6 +173,10 @@ $(document).ready(function() {
 			contentType: false,
 			processData: false
 		});
+		$("#file-upload").val("");
+	});
+	$("#form-upload").submit(function(event) {
+		event.preventDefault();
 	});
 
 	// make the user unable to edit the pipeline if the ignore checkbox is checked
@@ -361,7 +364,6 @@ function setPrefs(data) {
 	// parse json to data object
 	var obj = JSON.parse(data);
 	// input: camera orientation, exposure, rbalance, bbalance
-	console.log("running " + obj.image_flip)
 	$("#orientation-select")[0].selectedIndex = obj.image_flip;
 	$("#expSlider").val(obj.exposure);
 	$("#rbalSlider").val(obj.red_balance);
