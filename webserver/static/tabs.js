@@ -1,9 +1,29 @@
 // handles js
 $(document).ready(function()
 {
+	// link pixel buttons to set variables
+	bindPixelButton("eyedropper");
+	bindPixelButton("add-pixel");
+	bindPixelButton("subtract-pixel");
+	// handle eyedropper/add/subtract clicks on the stream
+	$("#stream").click(function(event) {
+		// check for eyedropper
+		if (pixelButtons["eyedropper"])
+		{
+			pixelButtonSend(event, "eyedropper");
+		}
+		else if (pixelButtons["add-pixel"])
+		{
+			pixelButtonSend(event, "add");
+		}
+		else if (pixelButtons["subtract-pixel"])
+		{
+			pixelButtonSend(event, "subtract");
+		}
+	});
+
 	// hide the pipeline form at start
 	$("#pipeline-form").hide();
-
 	// allow user to rename the pipeline
 	$("#pipeline-name").mouseenter(function(event) {
 		$(this).css("background-color", "#ADD8E6");
@@ -49,7 +69,7 @@ $(document).ready(function()
 			$(document).click();
 		}
 	});
-	
+
 	// make the user unable to edit the pipeline if the ignore checkbox is checked
 	$("#ignore-nt").change(function(){
 		if (this.checked)
@@ -75,6 +95,12 @@ $(document).ready(function()
 	bindSlider("hueThreshold", "hueText", "Hue", ["hue_min", "hue_max"]);
 	bindSlider("satThreshold", "satText", "Saturation", ["sat_min", "sat_max"]);
 	bindSlider("valThreshold", "valText", "Value", ["val_min", "val_max"]);
+
+	// handle dropdown menus
+	bindDropdown("source-select", "source");
+	bindDropdown("feed-select", "feed");
+	bindDropdown("erosion-select", "erosion");
+	bindDropdown("dilation-select", "dilation");
 
 	// handle tab clicks
 	$('.nav-linktabs > li > a').click(function(event) {
@@ -115,14 +141,27 @@ var sliderDone = function( jqXHR, textStatus, errorThrown ) {
 	$("#result").html(textStatus);
 }
 
+// binds a dropdown menu to output to the flask server
+function bindDropdown(dropdownID, param)
+{
+	$("#" + dropdownID).change(function() {
+		// find args, paramName and dropdown value
+		var obj = {};
+		obj[param] = $(this).val();
+		// send request to flask server
+		$.get("/fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
+	});
+}
+
+// binds a slider to output to the flask server
 function bindSlider(sliderID, textID, name, params)
 {
-	$("#" + sliderID).on("slide", function(slideEvt) {
+	$("#" + sliderID).on("slide", function(event) {
 		// get request to Flask server
 		var obj = {};
 		var str = "";
 		// convert single value to array if necessary
-		var value = slideEvt.value;
+		var value = event.value;
 		if (value.constructor !== Array)
 		{
 			value = [value];
@@ -142,4 +181,36 @@ function bindSlider(sliderID, textID, name, params)
 		// set text
 		$("#" + textID).text(name + ": " + str);
 	});
+}
+
+// we can't use .is(":focus") directly on the click, since that will be reset before the event
+// so instead we store the value until the click event fires, then reset it
+var pixelButtons = {};
+function bindPixelButton(buttonID)
+{
+	pixelButtons[buttonID] = false;
+	$(document).click(function(event) {
+		pixelButtons[buttonID] = $("#" + buttonID).is(":focus");
+	});
+}
+// send a request from a pixel button when the stream is clicked on
+function pixelButtonSend(event, name)
+{
+	// get click position
+	var offset = $(event.target).offset();
+	var x = event.pageX - offset.left;
+	var y = event.pageY - offset.top;
+	// convert to 320x240
+	var size = {x: $(event.target).width(), y: $(event.target).height()};
+	var pos = {x: 0, y: 0};
+	if (size.x > 0 && size.y > 0)
+	{
+		pos.x = x * 320 / size.x;
+		pos.y = y * 240 / size.y;
+	}
+	// send get request
+	var obj = {};
+	obj[name + "X"] = pos.x;
+	obj[name + "Y"] = pos.y;
+	$.get("/the_actual_fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
 }

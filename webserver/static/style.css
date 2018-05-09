@@ -34,7 +34,7 @@
 	float: left;
 	display: inline-block;
 	min-width: 450px;
-	padding: 5px;
+	padding: 15px;
 }
 
 .displayUI
@@ -43,7 +43,8 @@
 	width: 49%;
 	display: inline-block;
 	min-width: 450px;
-	padding: 5px;
+	padding: 15px;
+	align-content: center;
 }
 
 .textbox
@@ -89,6 +90,16 @@
 	cursor: not-allowed;
 }
 
+.btn-xhair
+{
+	width: 50%;
+	margin-top: 15px;
+	margin-bottom: 15px;
+	margin-left: 1px;
+	margin-right: 1px;
+	min-width: 100px;
+}
+
 .btn-small
 {
 	font-size: 12px;
@@ -97,4 +108,16 @@
 	padding-bottom: 2px;
 	padding-right: 5px;
 	padding-left: 5px;
+}
+
+.btn-med
+{
+	font-size: 14px;
+}
+
+#stream
+{
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
 }
