@@ -4,7 +4,7 @@ import re
 #defines required elements for a properly formatted
 #Preferences file
 prefs_format = {
-	"area_max":int,
+	"area_max":float,
 	"area_min":float,
 	"aspect_max":int,
 	"aspect_min":int,
