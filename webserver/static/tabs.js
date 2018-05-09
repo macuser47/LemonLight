@@ -8,13 +8,6 @@ $(document).ready(function() {
 	});
 	loadPrefs();
 
-	// constantly poll for target data: tv, tl, tx, ty, ta, ts
-	setInterval(function() {
-		$.get("/data").done(function(data) {
-			$("#target-info").text(data);
-		});
-	}, 100);
-
 	// link pixel buttons to set variables
 	bindPixelButton("eyedropper");
 	bindPixelButton("add-pixel");
@@ -223,7 +216,7 @@ $(document).ready(function() {
 	bindDropdown("region-select", "desired_contour_region");
 	bindDropdown("grouping-select", "contour_grouping");
 	bindDropdown("xhair-select", "calibration_type");
-	
+
 	// handle pipeline choose dropdown
 	$("#pipeline-select").change(function() {
 		var obj = {};
