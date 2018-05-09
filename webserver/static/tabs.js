@@ -216,14 +216,14 @@ $(document).ready(function() {
 	// handle dropdown menus
 	bindDropdown("source-select", "source", "the_actual_fuck");
 	bindDropdown("orientation-select", "image_flip");
-	bindDropdown("feed-select", "feed", "the_actual_fuck");
+	bindDropdown("feed-select", "view_mode", "app_prefs");
 	bindDropdown("erosion-select", "erosion");
 	bindDropdown("dilation-select", "dilation");
 	bindDropdown("sorting-select", "contour_sort_final");
 	bindDropdown("region-select", "desired_contour_region");
 	bindDropdown("grouping-select", "contour_grouping");
 	bindDropdown("xhair-select", "calibration_type");
-
+	
 	// handle pipeline choose dropdown
 	$("#pipeline-select").change(function() {
 		var obj = {};
