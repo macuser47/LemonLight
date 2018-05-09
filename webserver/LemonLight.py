@@ -18,9 +18,12 @@ frequency = 100.0
 stream_timeout = 5
 parent_c, child_c = Pipe()
 
+#globals
 stream_timestamp = time.time()
-
 app_prefs = Prefs.load_app_prefs("app.prefs")
+stream_active = False
+current_threshold_image = None
+current_contours = []
 
 def init():
 	global proc
@@ -37,19 +40,62 @@ def init():
 def update():
 	pass
 
-def push_nt_pipeline():
-	pass
+def compute_contour_data():
+	global current_threshold_image
+	global current_contours
+	while True:
+		current_threshold_image, _, current_contours, contours_found = Vision.filter( Vision.current_frame )
 
-'''
-TODO: Do client detection for this thread
-'''
+		if (not contours_found):
+			print("[" + str(time.time())[:10] + "] WARNING: NO CONTOURS FOUND")
+			NT.push({
+				"tv": 0,
+				"tx": 0,
+				"ty": 0,
+				"ta": 0,
+				"ts": 0,
+				"tl": 0.0
+			})
+			continue
+
+		#construct main NT response
+		main_contour, main_box = current_contours[0]
+		nt_data = {
+			"tv": 1,
+			"tx": int( main_box[0][0] ), #TODO: scale to angles
+			"ty": int( main_box[0][1] ),
+			"ta": int( cv2.contourArea(main_contour) ),
+			"ts": int( main_box[2] ),
+			"tl": 0.0 #TODO:latency calculation
+		}
+
+		pprint.pprint(nt_data)
+
+		#construction secondary contour responses
+		contours = []
+		for contour, box in current_contours[1:]:
+			contour_data = {
+				"tx": int( box[0][0] ),
+				"ty": int( box[0][1] ),
+				"ta": int( cv2.contourArea(contour) ),
+				"ts": int( box[2] ),
+				"cx": int( box[0][0] ),
+				"cy": int( box[0][1] )
+			}
+			contours.append(contour_data)
+
+		NT.push(nt_data)
+		NT.push_contours_raw(contours)
+
+
+
 def receive_webserver_data():
 	global parent_c
 	global stream_timestamp
 	global app_prefs
 	while True:
 		try:
-			mp_buffer = parent_c.recv()
+			mp_buffer = parent_c.recv() #note that recv() will wait until data is available before proceeding
 			Vision.current_prefs = mp_buffer["prefs"]
 			stream_timestamp = mp_buffer["stream_timestamp"]
 			app_prefs = mp_buffer["app_prefs"]
@@ -58,11 +104,19 @@ def receive_webserver_data():
 
 
 def pass_stream_data():
+	global stream_active
+	global current_threshold_image
+	global current_contours
 	while True:
-		if (time.time() - stream_timestamp < stream_timeout):
-			raw_img = Vision.current_frame
-			filtered_img = Vision.filter(raw_img)
-			jpeg = Vision.encode_jpg(raw_img, False)
+		stream_active = (time.time() - stream_timestamp < stream_timeout)
+		if (stream_active):
+			#output based on prefs
+			if ((app_prefs["view_mode"] == 1) & (not (current_threshold_image is None))): #TODO: break thresholding into independent function - it's lightweight
+				jpeg = Vision.encode_jpg(current_threshold_image, True) #Should these be encoded in a parallel thread? Perhaps.
+			else:
+				new_img = Vision.draw_contours(Vision.current_frame, current_contours)
+				jpeg = Vision.encode_jpg(new_img, False)
+
 			parent_c.send(jpeg)
 			#print("STREAMING")
 		else:
@@ -77,7 +131,7 @@ def start_threads():
 		thread.daemon = True
 		thread.start()
 
-thread_map = [receive_webserver_data, pass_stream_data, push_nt_pipeline]
+thread_map = [receive_webserver_data, pass_stream_data, compute_contour_data]
 
 if __name__ == "__main__":
 	init()

@@ -85,7 +85,7 @@ def check_schema(dictionary, format):
         return all(check_schema(c, format[0]) for c in dictionary)
     elif isinstance(format, type):
         # format is the type of dictionary
-        return isinstance (dictionary, format)
+        return isinstance (dictionary, format) | (dictionary is None)
     else:
         # format is neither a dict, nor list, not type
         return False
