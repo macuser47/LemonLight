@@ -94,6 +94,13 @@ def generate_stream():
 		time.sleep(1 / float(STREAM_FRAMERATE))
 
 '''
+Pass vpr prefs data to the frontend
+'''
+@app.route("/prefuck", methods = ["GET"])
+def pass_prefs():
+	return json.dumps( current_prefs )
+
+'''
 Update application config settins based on request from client
 TODO: Generalize with /fuck implementation: merge onto same url and format?
 TODO: Move to POST requests with body instead of GET
