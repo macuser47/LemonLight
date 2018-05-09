@@ -357,6 +357,85 @@
 	</div>
 	</section>
 
+	<section id="output" style="display: none;">
+
+	<!-- Targeting Region dropdown -->
+	<div id="sorting" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Targeting Region</p>
+		</div>
+		<select class="form-control" id="region-select">
+			<option>Center</option>
+			<option>Top</option>
+			<option>Bottom</option>
+			<option>Left</option>
+			<option>Right</option>
+		</select>
+	</div>
+
+	<!-- Targeting Grouping dropdown -->
+	<div id="sorting" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Targeting Grouping</p>
+		</div>
+		<select class="form-control" id="grouping-select">
+			<option>Single</option>
+			<option>Dual Target</option>
+			<option>Tri Target</option>
+		</select>
+	</div>
+
+	<!-- Crosshair Mode dropdown -->
+	<div id="sorting" class="vcomponent">
+		<div class="textbox">
+			<p class="aligncenter vtext">Crosshair Mode</p>
+		</div>
+		<select class="form-control" id="xhair-select">
+			<option>Single Crosshair</option>
+			<option>Dual Crosshair - Area Interp (Advanced)</option>
+		</select>
+	</div>
+
+	<!-- Crosshair calibration buttons -->
+	<div id="crosshair-a">
+		<h4>
+		<div id="xhair-calibration-a">
+			Crosshair
+		</div>
+		</h4>
+
+		<hr style="margin-top: -0.25em"/>
+
+		<div class="vcomponent">
+		<div class="btn-group" role="group">
+			<button type="button" class="btn btn-success btn-med" id="calibrate-xy-a">Calibrate XY</button>
+			<button type="button" class="btn btn-success btn-med" id="calibrate-x-a">Calibrate X</button>
+			<button type="button" class="btn btn-success btn-med" id="calibrate-y-a">Calibrate Y</button>
+		</div>
+		<button type="button" class="btn btn-danger btn-med" id="calibrate-reset-a">Reset</button>
+		</div>
+	</div>
+	<div id="crosshair-b" style="display: none;">
+		<h4>
+		<div id="xhair-calibration-b">
+			Crosshair B
+		</div>
+		</h4>
+
+		<hr style="margin-top: -0.25em"/>
+
+		<div class="vcomponent">
+		<div class="btn-group" role="group">
+			<button type="button" class="btn btn-success btn-med" id="calibrate-xy-b">Calibrate XY</button>
+			<button type="button" class="btn btn-success btn-med" id="calibrate-x-b">Calibrate X</button>
+			<button type="button" class="btn btn-success btn-med" id="calibrate-y-b">Calibrate Y</button>
+		</div>
+		<button type="button" class="btn btn-danger btn-med" id="calibrate-reset-b">Reset</button>
+		</div>
+	</div>
+
+	</section>
+
 <!-- end mainUI -->
 </div>
 

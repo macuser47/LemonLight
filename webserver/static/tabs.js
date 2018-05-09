@@ -5,6 +5,12 @@ $(document).ready(function()
 	bindPixelButton("eyedropper");
 	bindPixelButton("add-pixel");
 	bindPixelButton("subtract-pixel");
+	bindPixelButton("calibrate-xy-a");
+	bindPixelButton("calibrate-x-a");
+	bindPixelButton("calibrate-y-a");
+	bindPixelButton("calibrate-xy-b");
+	bindPixelButton("calibrate-x-b");
+	bindPixelButton("calibrate-y-b");
 	// handle eyedropper/add/subtract clicks on the stream
 	$("#stream").click(function(event) {
 		// check for eyedropper
@@ -12,13 +18,59 @@ $(document).ready(function()
 		{
 			pixelButtonSend(event, "eyedropper");
 		}
-		else if (pixelButtons["add-pixel"])
+		if (pixelButtons["add-pixel"])
 		{
 			pixelButtonSend(event, "add");
 		}
-		else if (pixelButtons["subtract-pixel"])
+		if (pixelButtons["subtract-pixel"])
 		{
 			pixelButtonSend(event, "subtract");
+		}
+
+		var center = [160, 120];
+		// calibration buttons A
+		if (pixelButtons["calibrate-xy-a"])
+		{
+			pixelButtonSend(event, "cross_a", "fuck", ["x", "y"], ["_x", "_y"], center);
+		}
+		if (pixelButtons["calibrate-x-a"])
+		{
+			pixelButtonSend(event, "cross_a", "fuck", ["x"], ["_x"], center);
+		}
+		if (pixelButtons["calibrate-y-a"])
+		{
+			pixelButtonSend(event, "cross_a", "fuck", ["y"], ["_y"], center);
+		}
+
+		// calibration buttons B
+		if (pixelButtons["calibrate-xy-b"])
+		{
+			pixelButtonSend(event, "cross_b", "fuck", ["x", "y"], ["_x", "_y"], center);
+		}
+		if (pixelButtons["calibrate-x-b"])
+		{
+			pixelButtonSend(event, "cross_b", "fuck", ["x"], ["_x"], center);
+		}
+		if (pixelButtons["calibrate-y-b"])
+		{
+			pixelButtonSend(event, "cross_b", "fuck", ["y"], ["_y"], center);
+		}
+	});
+
+	// only show dual crosshair mode when selected
+	$("#xhair-select").change(function() {
+		switch ($(this)[0].selectedIndex)
+		{
+			// if option 0, single crosshair, hide B and change Crosshair A to Crosshair
+			case 0:
+				$("#xhair-calibration-a").text("Crosshair");
+				$("#crosshair-b").hide();
+				break;
+			// if option 1, single crosshair, dual crosshair, show B and change Crosshair to Crosshair A
+			case 1:
+				$("#xhair-calibration-a").text("Crosshair A");
+				$("#crosshair-b").show();
+				break;
 		}
 	});
 
@@ -106,6 +158,9 @@ $(document).ready(function()
 	bindDropdown("erosion-select", "erosion");
 	bindDropdown("dilation-select", "dilation");
 	bindDropdown("sorting-select", "contour_sort_final");
+	bindDropdown("region-select", "desired_contour_region");
+	bindDropdown("grouping-select", "contour_grouping");
+	bindDropdown("xhair-select", "calibration_type");
 
 	// handle tab clicks
 	$('.nav-linktabs > li > a').click(function(event) {
@@ -209,7 +264,7 @@ function bindPixelButton(buttonID)
 	});
 }
 // send a request from a pixel button when the stream is clicked on
-function pixelButtonSend(event, name)
+function pixelButtonSend(event, name, url = "the_actual_fuck", dimensions = ["x", "y"], params = ["X", "Y"], origin = [0, 0])
 {
 	// get click position
 	var offset = $(event.target).offset();
@@ -217,15 +272,17 @@ function pixelButtonSend(event, name)
 	var y = event.pageY - offset.top;
 	// convert to 320x240
 	var size = {x: $(event.target).width(), y: $(event.target).height()};
-	var pos = {x: 0, y: 0};
+	var pos = {x: -origin[0], y: -origin[1]};
 	if (size.x > 0 && size.y > 0)
 	{
-		pos.x = x * 320 / size.x;
-		pos.y = y * 240 / size.y;
+		pos.x += x * 320 / size.x;
+		pos.y += y * 240 / size.y;
 	}
 	// send get request
 	var obj = {};
-	obj[name + "X"] = pos.x;
-	obj[name + "Y"] = pos.y;
-	$.get("/the_actual_fuck?" + $.param(obj)).done(sliderDone).fail(sliderFail);
+	for (var i = 0; i < params.length; i++)
+	{
+		obj[name + params[i]] = pos[dimensions[i]];
+	}
+	$.get("/" + url + "?" + $.param(obj)).done(sliderDone).fail(sliderFail);
 }
