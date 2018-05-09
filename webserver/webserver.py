@@ -8,12 +8,13 @@ import ctypes
 from multiprocessing import Pipe
 from threading import Thread
 import json
+import os
 
 STREAM_FRAMERATE = 30
 
 #preferences values
 app_prefs = Prefs.load_app_prefs("app.prefs")
-current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["current_pipeline"])  + ".vpr")
+current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["default_pipeline"])  + ".vpr2")
 
 #last requested timestamp for mjpg
 stream_timestamp = time.time()
@@ -23,6 +24,8 @@ global jpeg_data
 jpeg_data = cv2.imencode('.jpg', cv2.imread("image.jpeg"))[1].tostring()
 
 app = Flask(__name__)
+app.config["VPR2_UPLOAD_FOLDER"] = "/vprs"
+app.config["VPR_UPLOAD_FOLDER"] = "/vprs/legacy"
 
 
 '''
@@ -93,17 +96,43 @@ def generate_stream():
 		yield header + jpeg_data
 		time.sleep(1 / float(STREAM_FRAMERATE))
 
+
 '''
-Pass vpr prefs data to the frontend
+General immediate event handler for the webserver
 '''
-@app.route("/prefuck", methods = ["GET"])
-def pass_prefs():
-	return json.dumps( current_prefs )
+@app.route("/the_actual_fuck", methods = ["GET", "POST"])
+def handle_events():
+	#handle vpr uploads
+	if (request.method == "POST"):
+		if ("file" in request.files):
+			file = request.files["file"]
+			extension, extension_valid = validate_extension(file.filename, ["vpr", "vpr2"])
+			if (extension_valid):
+				if (extension == "vpr2"):
+					filename = "prefs" + str(app_prefs["current_pipeline"]) + ".vpr2"
+					file.save(os.path.join(app.config['VPR2_UPLOAD_FOLDER'], filename))
+				elif (extension == "vpr"): #legacy handling
+					filename = "prefs.vpr"
+					final_filename = "prefs" + str(app_prefs["current_pipeline"]) + ".vpr2"
+					file.save(os.path.join(app.config['VPR_UPLOAD_FOLDER'], filename))
+					try:
+						Prefs.save( Prefs.load_legacy("/vprs/legacy/prefs.vpr"), final_filename )
+					except Prefs.InvalidPreferencesException:
+						f_print("Err: Newly uploaded vpr improperly formatted")
+						return "File format incomplete or damaged"
+	else:
+		pass
+
+
+def validate_extension(filename, extensions):
+	extension = filename.rsplit(".", 1)[1].lower()
+	return extension, extension in extensions
 
 '''
 Update application config settins based on request from client
 TODO: Generalize with /fuck implementation: merge onto same url and format?
 TODO: Move to POST requests with body instead of GET
+Returns application prefs
 '''
 @app.route("/app_prefs", methods = ["GET"])
 def process_app_data():
@@ -120,18 +149,18 @@ def process_app_data():
 		#Do server-specific event handling for prefs data
 		if ("current_pipeline" in data):
 			#load new pipeline
-			current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["current_pipeline"])  + ".vpr")
-			#return new prefs data for client updates
-			return json.dumps( current_prefs )
+			current_prefs = Prefs.load("vprs/prefs" + str(app_prefs["current_pipeline"])  + ".vpr2")
 
 	else:
 		f_print("App prefs: Malformed request, ignoring...")
 
-	return "Welcome to <strong>the internet</strong><br>Just kidding, you're on LAN.<br><strong>B A M B O O Z L E D</strong>"
+	return json.dumps( app_prefs )
+	#return "Welcome to <strong>the internet</strong><br>Just kidding, you're on LAN.<br><strong>B A M B O O Z L E D</strong>"
 
 
 '''
 Update configuration settings based on request from client
+Returns vpr prefs
 '''
 @app.route("/fuck", methods = ["GET"])
 def process_data():
@@ -140,15 +169,17 @@ def process_data():
 
 	#sets data values if data properly formatted
 	if (options_data_valid(data, Prefs.prefs_format)):	 
+	#if (Prefs.schema_subset(data, Prefs.prefs_format)):
 		f_print("Request formatted properly!")
 		for key, value in data.iteritems():
 			current_prefs[key] = Prefs.prefs_format[key](value)
 		#Update local file every time a change is made
-		Prefs.save(current_prefs, "vprs/prefs" + str(app_prefs["current_pipeline"]) + ".vpr")
+		Prefs.save(current_prefs, "vprs/prefs" + str(app_prefs["current_pipeline"]) + ".vpr2")
 	else:
 		f_print("Malformed request, ignoring...")
 
-	return "You shouldn't be here....<br>Get the <b><i>fuck</i></b> out."
+	return json.dumps( current_prefs )
+	#return "You shouldn't be here....<br>Get the <b><i>fuck</i></b> out."
 
 '''
 Checks if incoming GET preference changes are valid
