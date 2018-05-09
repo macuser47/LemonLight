@@ -1,12 +1,5 @@
 // handles js
 $(document).ready(function() {
-	// at start, ajax to app_prefs to get current pipeline/ignore_nt state
-	$.get("/fuck").done(function(data) {
-		var obj = JSON.parse(data);
-		$("#pipeline-select")[0].selectedIndex = obj.current_pipeline;
-		$("#ignore-nt").prop('checked', obj.ignore_nt);
-	});
-	loadPrefs();
 
 	// link pixel buttons to set variables
 	bindPixelButton("eyedropper");
@@ -205,7 +198,7 @@ $(document).ready(function() {
 	bindSlider("hueThreshold", "hueText", "Hue", ["hue_min", "hue_max"]);
 	bindSlider("satThreshold", "satText", "Saturation", ["sat_min", "sat_max"]);
 	bindSlider("valThreshold", "valText", "Value", ["val_min", "val_max"]);
-	bindSlider("areaFilter", "areaText", "Target Area (% of image)", ["area_min", "area_max"], function(x) { return ; });
+	bindSlider("areaFilter", "areaText", "Target Area (% of image)", ["area_min", "area_max"], function(x) { return 100 * Math.pow(x / 100, 4); });
 	bindSlider("fullFilter", "fullText", "Target Fullness (% of bounding rectangle)", ["convexity_min", "convexity_max"]);
 	bindSlider("aspectFilter", "aspectText", "Target Aspect Ratio (W/H)", ["aspect_min", "aspect_max"], function(x) { return 20 * Math.pow(x / 20, 2); });
 
@@ -257,6 +250,15 @@ $(document).ready(function() {
 		var section = $("section" + "#" + activeDiv);
 		section.show();
 	});
+
+	// at start, ajax to app_prefs to get current pipeline/ignore_nt state
+	// load prefs at end to make sure all bindings have occurred
+	$.get("/fuck").done(function(data) {
+		var obj = JSON.parse(data);
+		$("#pipeline-select")[0].selectedIndex = obj.current_pipeline;
+		$("#ignore-nt").prop('checked', obj.ignore_nt);
+	});
+	loadPrefs();
 });
 
 // slider callbacks
@@ -363,7 +365,6 @@ function loadPrefs()
 function setPrefs(data) {
 	// parse json to data object
 	var obj = JSON.parse(data);
-	console.log(obj);
 	// input: camera orientation, exposure, rbalance, bbalance
 	$("#orientation-select")[0].selectedIndex = obj.image_flip;
 	setSlider("expSlider", obj.exposure);
@@ -375,9 +376,9 @@ function setPrefs(data) {
 	setSlider("valThreshold", [obj.val_min, obj.val_max]);
 	// contour filtering: sorting, area, fullness, aspect ratio
 	$("#sorting-select")[0].selectedIndex = obj.contour_sort_final;
-	setSlider("areaFilter", [obj.area_min, obj.area_max], function(x) { return 100 * Math.pow(x / 100, 0.25); });
+	setSlider("areaFilter", [obj.area_min, obj.area_max], function(x) { return Math.round(100 * Math.pow(x / 100, 0.25)); });
 	setSlider("fullFilter", [obj.convexity_min, obj.convexity_max]);
-	setSlider("aspectFilter", [obj.aspect_min, obj.aspect_max], function(x) { return 100 * Math.pow(x / 100, 0.5); });
+	setSlider("aspectFilter", [obj.aspect_min, obj.aspect_max], function(x) { return Math.round(100 * Math.pow(x / 100, 0.5)); });
 	// output: region, grouping, crosshair mode
 	$("#region-select")[0].selectedIndex = obj.desired_contour_region;
 	$("#grouping-select")[0].selectedIndex = obj.contour_grouping;
@@ -388,21 +389,34 @@ function setPrefs(data) {
 
 // download a file with the given text
 function download(filename, text) {
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-  element.setAttribute('download', filename);
+	var element = document.createElement('a');
+	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+	element.setAttribute('download', filename);
 
-  element.style.display = 'none';
-  document.body.appendChild(element);
+	element.style.display = 'none';
+	document.body.appendChild(element);
 
-  element.click();
+	element.click();
 
-  document.body.removeChild(element);
+	document.body.removeChild(element);
 }
 
 // allows you to set a slider and update it
 function setSlider(sliderID, value, inverse = function(x) { return x; })
 {
-	$("#" + sliderID).slider("setValue", inverse(value));
+	// apply inverse, preserving array if necessary
+	if (value.constructor === Array)
+	{
+		for (var i = 0; i < value.length; i++)
+		{
+			value[i] = inverse(value[i]);
+		}
+	}
+	else
+	{
+		value = inverse(value);
+	}
+	// set slider
+	$("#" + sliderID).slider("setValue", value);
 	$("#" + sliderID).trigger("slide");
 }
