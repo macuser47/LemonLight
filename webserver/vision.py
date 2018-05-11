@@ -48,9 +48,10 @@ def filter(img):
 		screen_area = resolution[0] * resolution[1]
 		contour_valid &= (current_prefs["area_min"] <= (cv2.contourArea(contour) / screen_area) <= current_prefs["area_max"])
 		#filter by aspect ratio
+		_, _, w, h = cv2.boundingRect(contour)
 		rect = cv2.minAreaRect(contour)
-		if (not (rect[1][1] == 0)):
-			aspect_ratio = float(rect[1][0]) / rect[1][1]
+		if (not (h == 0)): #TODO: add mode orientation ignoring
+			aspect_ratio = float(w) / h
 			contour_valid &= (current_prefs["aspect_min"] <= aspect_ratio <= current_prefs["aspect_max"])
 
 		if (contour_valid):
