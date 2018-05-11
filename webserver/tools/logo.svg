@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+	xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns="http://www.w3.org/2000/svg"
+	version="1.1"
+	width='400' height='500' viewBox="0 0 400 500" preserveAspectRatio="none" style='background-color: white'>
+
+	<circle cx="200" cy="200" r="170" stroke="yellow" stroke-width="10" fill="#F1E398" />
+
+	<path d="M 335.0 200.0 Q 376.3713 284.93595 284.17112 305.54725  Q 243.56012 390.84934 169.95967 331.61527  Q 77.94728 353.04927 78.3692 258.5743  Q 4.24262 200.0 78.3692 141.4257  Q 77.94728 46.95073 169.95967 68.38473  Q 243.56012 9.15066 284.17112 94.45275  Q 376.3713 115.06405 335.0 200.0  Q 376.3713 284.93595 284.17112 305.54725 " stroke="#F1E398" fill="#FBDB14" stroke-width="2" stroke-linecap="round" fill-rule="nonzero"/>
+
+	<circle cx="200" cy="200" r="15" fill="#F1E398" />
+
+	<path d="M335.0 200.0 L 195.0000035 215.652476" stroke="#F1E398" fill="transparent" stroke-width="4" />
+	<path d="M284.17112 305.54725 L 184.6449485 205.850002" stroke="#F1E398" fill="transparent" stroke-width="4" />
+	<path d="M169.95967 331.61527 L 185.8525645 191.642353" stroke="#F1E398" fill="transparent" stroke-width="4" />
+	<path d="M78.3692 258.5743 L 197.7134915 183.7281895" stroke="#F1E398" fill="transparent" stroke-width="4" />
+	<path d="M78.3692 141.4257 L 211.296197 188.0670255" stroke="#F1E398" fill="transparent" stroke-width="4" />
+	<path d="M169.95967 68.38473 L 216.3726415 201.391632" stroke="#F1E398" fill="transparent" stroke-width="4" />
+	<path d="M284.17112 94.45275 L 209.1201545 213.6683115" stroke="#F1E398" fill="transparent" stroke-width="4" />
+
+	<text text-anchor="end" x="220" y="430" font-size="55" font-family="Verdana" fill="yellow">LEMON</text>
+	<text text-anchor="start" x="220" y="430" font-size="55" font-family="Verdana" fill="#DDCF84">LIGHT</text>
+
+</svg>
